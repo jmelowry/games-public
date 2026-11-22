@@ -12,12 +12,12 @@
 <title>Butterfly Friends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <style>
 :root{--ink:#3b3350;--cream:#fffaf0;--pink:#ff8fb1;--gold:#ffc83d;--safe-t:env(safe-area-inset-top);--safe-l:env(safe-area-inset-left);--safe-r:env(safe-area-inset-right);--safe-b:env(safe-area-inset-bottom)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fredoka,ui-rounded,system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Andika,Fredoka,ui-rounded,system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
 #game{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block;image-rendering:pixelated}
 .hud{position:fixed;top:calc(var(--safe-t) + 12px);display:flex;gap:10px;z-index:5}
 .hud.left{left:calc(var(--safe-l) + 12px)}
@@ -25,7 +25,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 .btn{position:relative;border:0;background:rgba(255,255,255,.94);border-radius:18px;height:58px;min-width:58px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;box-shadow:0 4px 0 rgba(59,51,80,.22),0 10px 24px rgba(0,0,0,.12);font:inherit;font-weight:700;font-size:26px;color:var(--ink);touch-action:manipulation;cursor:pointer}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(59,51,80,.22)}
 .btn svg{width:36px;height:36px;display:block}
-#count{font-family:'Pixelify Sans',Fredoka,sans-serif;min-width:1ch}
+#count{font-family:Andika,Fredoka,sans-serif;min-width:1ch}
 #gearBtn .ring{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);pointer-events:none}
 #gearBtn .ring rect{fill:none;stroke:var(--pink);stroke-width:5;stroke-linecap:round;transition:none}
 #gearBtn svg.g{width:30px;height:30px;opacity:.55}
@@ -43,20 +43,20 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .stars{font-size:30px;letter-spacing:4px;color:var(--gold);text-shadow:0 2px 0 #d99a12;line-height:1}
 .stars.r3{background:linear-gradient(90deg,#ff6b8b,#ffc83d,#7ee081,#6bc7ff,#b98bff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
-.name{font-family:'Pixelify Sans',Fredoka,sans-serif;font-size:22px;font-weight:700;text-align:center;opacity:.85}
+.name{font-family:Andika,Fredoka,sans-serif;font-size:22px;font-weight:700;text-align:center;opacity:.85}
 .round{width:84px;height:84px;border-radius:50%;background:#7ed37a;color:#fff;box-shadow:0 6px 0 #4fa24c,0 12px 24px rgba(0,0,0,.15);margin-top:6px}
 .round:active{box-shadow:0 2px 0 #4fa24c}
 .round svg{width:48px;height:48px}
 #start{background:radial-gradient(ellipse at 50% 40%,rgba(255,250,235,.55),rgba(255,240,250,.1) 70%);flex-direction:column;gap:18px;text-align:center}
-#start h1{margin:0;font-family:'Pixelify Sans',Fredoka,sans-serif;font-size:clamp(40px,10vw,84px);line-height:.95;color:#fff;text-shadow:0 4px 0 #e05a8b,0 8px 0 #6f4a9e,0 18px 30px rgba(60,30,90,.35);letter-spacing:1px}
+#start h1{margin:0;font-family:Andika,Fredoka,sans-serif;font-size:clamp(40px,10vw,84px);line-height:.95;color:#fff;text-shadow:0 4px 0 #e05a8b,0 8px 0 #6f4a9e,0 18px 30px rgba(60,30,90,.35);letter-spacing:1px}
 #start h1 span{display:block}
 #start .play{width:120px;height:120px;border-radius:50%;background:#ff8fb1;box-shadow:0 8px 0 #d35e86,0 20px 40px rgba(0,0,0,.2)}
 #start .play svg{width:60px;height:60px;margin-left:8px}
-#start .have{display:flex;align-items:center;gap:8px;font-family:'Pixelify Sans',Fredoka;font-size:28px;font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(60,30,90,.5)}
+#start .have{display:flex;align-items:center;gap:8px;font-family:Andika,Fredoka,sans-serif;font-size:28px;font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(60,30,90,.5)}
 #start .have svg{width:40px;height:40px}
 #book .sheet{background:var(--cream);border-radius:32px;width:min(920px,100%);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 #book header{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px 20px}
-#book .title{display:flex;align-items:center;gap:10px;font-family:'Pixelify Sans',Fredoka;font-size:34px;font-weight:700}
+#book .title{display:flex;align-items:center;gap:10px;font-family:Andika,Fredoka,sans-serif;font-size:34px;font-weight:700}
 #book .title svg{width:48px;height:48px}
 #grid{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:6px 14px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;align-content:start}
 .cell{border:0;background:#fff;border-radius:22px;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 4px 0 rgba(59,51,80,.1);position:relative;touch-action:manipulation;font:inherit;cursor:pointer}
@@ -95,10 +95,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 #trophyBtn .em{font-size:30px;line-height:1}
 #badgeWall .sheet{background:var(--cream);border-radius:32px;width:min(920px,100%);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 #badgeWall header{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px 20px}
-#badgeWall .title{font-family:'Pixelify Sans',Fredoka;font-size:32px;font-weight:700;display:flex;gap:10px;align-items:center}
+#badgeWall .title{font-family:Andika,Fredoka,sans-serif;font-size:32px;font-weight:700;display:flex;gap:10px;align-items:center}
 #bgrid{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:6px 14px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px;align-content:start}
 .badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
-.medal{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(circle at 35% 30%,#fff7c9,#ffd45e 55%,#e8a923);box-shadow:0 5px 0 #c98d12,inset 0 0 0 5px rgba(255,255,255,.55);font-family:'Pixelify Sans',Fredoka;font-weight:700;color:#7a4a00;overflow:hidden}
+.medal{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(circle at 35% 30%,#fff7c9,#ffd45e 55%,#e8a923);box-shadow:0 5px 0 #c98d12,inset 0 0 0 5px rgba(255,255,255,.55);font-family:Andika,Fredoka,sans-serif;font-weight:700;color:#7a4a00;overflow:hidden}
 .medal canvas{width:76px;height:76px}
 .medal .num{font-size:34px;line-height:1}
 .medal .em{font-size:40px;line-height:1}
@@ -126,11 +126,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 #infoPop .card{background:radial-gradient(circle at 50% 30%,#fffbe6,#fff2c7);max-width:min(420px,92vw)}
 #mapView .sheet{background:var(--cream);border-radius:32px;width:min(720px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 #mapView header{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 6px 20px}
-#mapView .title{font-family:'Pixelify Sans',Fredoka;font-size:30px;font-weight:700;display:flex;gap:10px;align-items:center}
+#mapView .title{font-family:Andika,Fredoka,sans-serif;font-size:30px;font-weight:700;display:flex;gap:10px;align-items:center}
 .mapbody{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:4px 14px 18px;display:flex;flex-direction:column;align-items:center;gap:10px}
 #mapCanvas{border-radius:18px;box-shadow:0 4px 0 rgba(59,51,80,.15)}
 .stamprow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.stamp{width:54px;height:54px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(59,51,80,.12);font-family:'Pixelify Sans',Fredoka;font-weight:700;font-size:24px;color:#c9c1b0}
+.stamp{width:54px;height:54px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(59,51,80,.12);font-family:Andika,Fredoka,sans-serif;font-weight:700;font-size:24px;color:#c9c1b0}
 .stamp img{max-width:46px;max-height:46px}
 .stamp.no{background:#efe9dc}
 .namerow{display:flex;align-items:center;gap:10px;justify-content:center}
@@ -143,7 +143,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 .badge{cursor:pointer}
 #skateHud{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);display:none;align-items:center;gap:12px;z-index:6}
 #skateHud.show{display:flex}
-.skpill{background:rgba(255,255,255,.95);border-radius:999px;padding:10px 18px;font-family:'Pixelify Sans',Fredoka;font-weight:700;font-size:26px;box-shadow:0 4px 0 rgba(59,51,80,.18)}
+.skpill{background:rgba(255,255,255,.95);border-radius:999px;padding:10px 18px;font-family:Andika,Fredoka,sans-serif;font-weight:700;font-size:26px;box-shadow:0 4px 0 rgba(59,51,80,.18)}
 #skateExit{width:64px;height:64px;margin:0}
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
@@ -154,7 +154,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 
 <div class="hud left">
   <button class="btn" id="bookBtn" aria-label="My butterflies"><span class="ico-fly"></span><span id="count">0</span></button>
-  <button class="btn" id="trophyBtn" aria-label="Achievements"><span class="em">🏆</span><span id="bcount" style="font-family:'Pixelify Sans',Fredoka">0</span></button>
+  <button class="btn" id="trophyBtn" aria-label="Achievements"><span class="em">🏆</span><span id="bcount" style="font-family:Andika,Fredoka,sans-serif">0</span></button>
 </div>
 <div class="hud right">
   <button class="btn" id="charBtn" aria-label="Change character"><div class="face"></div></button>
