@@ -90,7 +90,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .wtile img{max-width:100%;max-height:100%}
 .wtile.on{outline:4px solid #ff6f9a;background:#ffe3ee}
 .wtile.no{background:rgba(239,233,220,.85)}
-#chars{display:grid;grid-template-columns:repeat(3,auto);gap:12px;justify-content:center}
+#chars{display:grid;grid-template-columns:repeat(5,auto);gap:12px;justify-content:center}
+@media (max-width:600px){#chars{grid-template-columns:repeat(3,auto);gap:8px}.ccard img{width:62px;height:94px}#start{gap:12px}}
 .ccard{border:0;background:rgba(255,255,255,.92);border-radius:24px;padding:8px 8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(59,51,80,.2);font:inherit;font-weight:700;font-size:16px;color:var(--ink);touch-action:manipulation;cursor:pointer;outline:4px solid transparent;transition:transform .15s,outline-color .15s}
 .ccard canvas{width:68px;height:112px;display:block}
 .ccard img{width:84px;height:128px;object-fit:contain;display:block;filter:drop-shadow(0 4px 3px rgba(59,51,80,.18));-webkit-user-drag:none}
@@ -161,6 +162,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
 
+#snackBtn{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);z-index:6;width:96px;height:96px;border-radius:50%;padding:0;display:none;background:#fff7d6;animation:snackPulse 1.2s ease-in-out infinite}
+#snackBtn.show{display:flex}
+#snackBtn img{width:64px;height:64px;object-fit:contain}
+#snackBtn.none img{filter:grayscale(1);opacity:.45}
+#snackN{position:absolute;right:2px;top:-4px;background:#ff6f9a;color:#fff;border-radius:14px;min-width:30px;height:30px;font-size:19px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+@keyframes snackPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.08)}}
+.acell img{width:84px;height:84px;object-fit:contain}
+.acell.no img{filter:brightness(0);opacity:.18}
+.acell .hearts{font-size:15px;letter-spacing:1px}
+.acell.buddy{outline:4px solid #ff6f9a;background:#ffe3ee}
 #boothBtn{position:fixed;left:calc(var(--safe-l) + 14px);bottom:calc(var(--safe-b) + 16px);z-index:5;width:72px;height:72px;border-radius:50%;padding:0}
 #boothBtn .em{font-size:36px;line-height:1}
 #booth .sheet{background:var(--cream);border-radius:32px;width:min(860px,100%);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
@@ -231,7 +242,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 <div class="overlay dim" id="book">
   <div class="sheet">
     <header>
-      <div class="title"><span class="ico-fly"></span><span id="bookCount">0</span><button class="btn fbtn" id="favFilter" aria-label="Show my hearted butterflies">💗 <span id="favCount">0</span></button></div><div class="follow"><button class="btn fbtn" id="followLine" aria-label="Butterflies follow in a line"><svg viewBox="0 0 48 24"><circle cx="6" cy="12" r="4.5" fill="#ff8fb1"/><circle cx="18" cy="12" r="4.5" fill="#b98bff"/><circle cx="30" cy="12" r="4.5" fill="#6bc7ff"/><circle cx="42" cy="12" r="4.5" fill="#ffc83d"/></svg></button><button class="btn fbtn" id="followCircle" aria-label="Butterflies fly in a circle"><svg viewBox="0 0 48 24"><circle cx="24" cy="12" r="3.2" fill="#3b3350"/><circle cx="24" cy="3" r="3.6" fill="#ff8fb1"/><circle cx="33" cy="12" r="3.6" fill="#b98bff"/><circle cx="24" cy="21" r="3.6" fill="#6bc7ff"/><circle cx="15" cy="12" r="3.6" fill="#ffc83d"/></svg></button></div>
+      <div class="title"><span class="ico-fly"></span><span id="bookCount">0</span><button class="btn fbtn" id="favFilter" aria-label="Show my hearted butterflies">💗 <span id="favCount">0</span></button><button class="btn fbtn" id="aniTab" aria-label="My animal friends">🐾</button></div><div class="follow"><button class="btn fbtn" id="followLine" aria-label="Butterflies follow in a line"><svg viewBox="0 0 48 24"><circle cx="6" cy="12" r="4.5" fill="#ff8fb1"/><circle cx="18" cy="12" r="4.5" fill="#b98bff"/><circle cx="30" cy="12" r="4.5" fill="#6bc7ff"/><circle cx="42" cy="12" r="4.5" fill="#ffc83d"/></svg></button><button class="btn fbtn" id="followCircle" aria-label="Butterflies fly in a circle"><svg viewBox="0 0 48 24"><circle cx="24" cy="12" r="3.2" fill="#3b3350"/><circle cx="24" cy="3" r="3.6" fill="#ff8fb1"/><circle cx="33" cy="12" r="3.6" fill="#b98bff"/><circle cx="24" cy="21" r="3.6" fill="#6bc7ff"/><circle cx="15" cy="12" r="3.6" fill="#ffc83d"/></svg></button></div>
       <button class="btn" id="bookClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     </header>
     <div id="grid"></div>
@@ -270,6 +281,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 <button class="btn" id="mapBtn" aria-label="World map"><span class="em">🗺️</span></button>
 <div id="skateHud"><div class="skpill">❄️ <span id="skateCount">0</span></div><button class="btn round" id="skateExit" aria-label="Done skating"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 <div id="fade"></div>
+<button class="btn" id="snackBtn" aria-label="Share a snack"><img id="snackImg" alt=""><span id="snackN"></span></button>
 <button class="btn" id="boothBtn" aria-label="Photo booth"><span class="em">📷</span></button>
 <div class="overlay dim" id="booth" style="padding:calc(var(--safe-t) + 8px) calc(var(--safe-r) + 8px) calc(var(--safe-b) + 8px) calc(var(--safe-l) + 8px)">
   <div class="sheet">
@@ -562,7 +574,7 @@ for(const c of ground)c.sort((a,b)=>a.y-b.y);
 for(const lm of LANDMARKS)if(lm.kind!=='water'&&lm.kind!=='flat')tall[cellOf(lm.x,lm.y)].push({kind:'lm',x:lm.x,y:lm.y,lm});
 
 // ---------- art ----------
-const ART={};const ART_PATHS={grass:'map/grass',tree:'map/tree',tree_blossom:'map/tree_blossom',tree_apple:'map/tree_apple',tree_dark:'map/tree_dark',bush:'map/bush',flowers1:'map/flowers1',flowers2:'map/flowers2',flowers3:'map/flowers3',flowers4:'map/flowers4',path:'map/path',rock:'map/rock',mushroom:'map/mushroom',pond:'map/pond'};
+const ART={};const ART_PATHS={a_bunny:'animals/bunny',a_penguin:'animals/penguin',a_fox:'animals/fox',a_fennec:'animals/fennec',a_kitten:'animals/kitten',f_clover:'animals/f_clover',f_fish:'animals/f_fish',f_berries:'animals/f_berries',f_melon:'animals/f_melon',f_milk:'animals/f_milk',grass:'map/grass',tree:'map/tree',tree_blossom:'map/tree_blossom',tree_apple:'map/tree_apple',tree_dark:'map/tree_dark',bush:'map/bush',flowers1:'map/flowers1',flowers2:'map/flowers2',flowers3:'map/flowers3',flowers4:'map/flowers4',path:'map/path',rock:'map/rock',mushroom:'map/mushroom',pond:'map/pond'};
 ['g_snow','g_sand','g_moss','g_hills','snow_pine','palm','woods_tree','wisteria','ice_rocks','cactus','glow_mush','topiary','worldmap',...LANDMARKS.map(l=>l.img),...LANDMARKS.filter(l=>l.room).map(l=>l.room),...LANDMARKS.filter(l=>l.treasure).map(l=>l.treasure)].forEach(k=>ART_PATHS[k]='world/'+k);
 const GROUND_KEYS=new Set(['grass','g_snow','g_sand','g_moss','g_hills','path']);
 function loadArt(k){const im=new Image();im.onload=()=>{ART[k]=im;if(k.startsWith('t_')&&isShown('start')){buildWardrobe();refreshCardImgs()}if(GROUND_KEYS.has(k))chunkCache.clear()};im.src=ART_PATHS[k]+'.webp'}
@@ -595,7 +607,7 @@ function buildChunk(i,j){
   return c}
 // ---------- persistence ----------
 const KEY='butterfly-friends-v1';
-let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:'',flakes:0,follow:'line'};
+let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:'',flakes:0,follow:'line',animals:{},food:{},buddy:null};
 const owned=new Set();
 const validSeed=n=>Number.isInteger(n)&&n>=0&&n<0x40000000;
 function loadSave(){try{const raw=localStorage.getItem(KEY);let src=KEY;if(raw){try{JSON.parse(raw)}catch(e){src=rescueSave();try{localStorage.setItem(KEY+'-broken-'+Date.now(),raw)}catch(_){}if(!src){saveLoadedOK=true}}}const s=JSON.parse((src&&localStorage.getItem(src))||'null');if(s&&Array.isArray(s.seeds)){save.seeds=s.seeds.filter(validSeed);save.friends=(s.friends||[]).filter(validSeed);save.sound=s.sound!==false;save.played=!!s.played;if(typeof s.char==='string')save.char=s.char;if(Array.isArray(s.badges))save.badges=s.badges.filter(x=>typeof x==='string');const ids=new Set(LANDMARKS.map(l=>l.id));if(Array.isArray(s.landmarks))save.landmarks=s.landmarks.filter(x=>ids.has(x));if(Array.isArray(s.treasures))save.treasures=s.treasures.filter(x=>ids.has(x));if(s.lands&&typeof s.lands==='object')for(const k of LAND_KEYS)if(Number.isFinite(s.lands[k]))save.lands[k]=s.lands[k];if(Number.isFinite(s.flakes))save.flakes=s.flakes;if(s.follow==='circle'||s.follow==='line')save.follow=s.follow;if(typeof s.exp==='string'){save.exp=s.exp;expFromStr(s.exp)}}}catch(e){}
@@ -610,10 +622,10 @@ function rescueSave(){// if the main save is unreadable, fall back to the spare 
   for(const k of[KEY,KEY+'-prev']){try{const raw=localStorage.getItem(k);if(!raw)continue;const s=JSON.parse(raw);if(s&&Array.isArray(s.seeds))return k}catch(e){}}return null}
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 const bitsOf=list=>LANDMARKS.reduce((a,l,i)=>a|(list.includes(l.id)?1<<i:0),0);
-const encode=()=>'bf-'+save.seeds.map(s=>s.toString(36)).join('-')+'--l'+bitsOf(save.landmarks).toString(36)+'--t'+bitsOf(save.treasures).toString(36);
+const encode=()=>'bf-'+save.seeds.map(s=>s.toString(36)).join('-')+'--l'+bitsOf(save.landmarks).toString(36)+'--t'+bitsOf(save.treasures).toString(36)+'--a'+ANIMALS.reduce((m,a,i)=>m|(isFriend(a.id)?1<<i:0),0).toString(36);
 let pendingExtras=null;
-function parseCode(text){const m=/bf-([a-z0-9-]+)/i.exec(text||'');if(!m)return null;const parts2=m[1].toLowerCase().split('--');pendingExtras={l:0,t:0};for(const q of parts2.slice(1)){if(q[0]==='l')pendingExtras.l=parseInt(q.slice(1),36)||0;if(q[0]==='t')pendingExtras.t=parseInt(q.slice(1),36)||0}return parts2[0].split('-').filter(Boolean).map(s=>parseInt(s,36)).filter(validSeed)}
-function mergeExtras(){if(!pendingExtras)return 0;let a=0;LANDMARKS.forEach((l,i)=>{if(pendingExtras.l&(1<<i)&&!save.landmarks.includes(l.id)){save.landmarks.push(l.id);a++}if(pendingExtras.t&(1<<i)&&!save.treasures.includes(l.id)){save.treasures.push(l.id);a++}});pendingExtras=null;return a}
+function parseCode(text){const m=/bf-([a-z0-9-]+)/i.exec(text||'');if(!m)return null;const parts2=m[1].toLowerCase().split('--');pendingExtras={l:0,t:0,a:0};for(const q of parts2.slice(1)){if(q[0]==='a')pendingExtras.a=parseInt(q.slice(1),36)||0;if(q[0]==='l')pendingExtras.l=parseInt(q.slice(1),36)||0;if(q[0]==='t')pendingExtras.t=parseInt(q.slice(1),36)||0}return parts2[0].split('-').filter(Boolean).map(s=>parseInt(s,36)).filter(validSeed)}
+function mergeExtras(){if(!pendingExtras)return 0;let a=0;ANIMALS.forEach((x,i)=>{if(pendingExtras.a&(1<<i)&&!isFriend(x.id)){save.animals[x.id]=3;a++}});LANDMARKS.forEach((l,i)=>{if(pendingExtras.l&(1<<i)&&!save.landmarks.includes(l.id)){save.landmarks.push(l.id);a++}if(pendingExtras.t&(1<<i)&&!save.treasures.includes(l.id)){save.treasures.push(l.id);a++}});pendingExtras=null;return a}
 function mergeSeeds(list){let added=mergeExtras();for(const s of list){if(owned.has(s))continue;owned.add(s);save.seeds.push(s);added++}
   if(!save.friends.length)save.friends=save.seeds.slice(-MAX_FRIENDS);persist();syncFriends();updateCount();if(typeof checkBadges==='function'){const f=checkBadges(true);if(f.length)setTimeout(()=>toast(`🏆 +${f.length}`),2800)}return added}
 function shareLink(){let base=location.href.split('#')[0];try{if(!/^https?:$/.test(location.protocol)||/claudeusercontent|claude\.ai|claude\.site/.test(location.hostname))base=SHARE_URL}catch(e){base=SHARE_URL}return base+'#'+encode()}
@@ -775,6 +787,7 @@ function update(dt){
   if(skate&&!modal){skateStep(dt,mx,my)}
   else if(mx||my){const sp=room?150:180;P.x+=mx*sp*dt;P.y+=my*sp*dt;P.moving=true;P.walk+=dt*12;if(Math.abs(mx)>.2)P.face=mx>0?1:-1;room?collideRoom(P):collide(P)}else P.moving=false;
   P.swing=Math.max(0,P.swing-dt);skateCool=Math.max(0,skateCool-dt);
+  if(started&&!skate)updateAnimals(modal?0:dt);else $('snackBtn').classList.remove('show');
   if(started&&!room&&!skate&&!modal&&skateCool<=0&&LAKE&&inLake(P.x,P.y,.97))startSkate();
   // camera
   const hw=lo.width/2/S,hh=lo.height/2/S,k=Math.min(1,dt*(started?6:1));
@@ -816,7 +829,7 @@ function update(dt){
   // breadcrumb trail so friends can follow in a line
   {const last=trail[0];if(!last||Math.hypot(P.x-last.x,P.y-last.y)>5){trail.unshift({x:P.x,y:P.y});if(trail.length>260)trail.pop()}}
   const n=friends.length,lineMode=save.follow!=='circle';friends.forEach((f,i)=>{let tx,ty;
-    if(lineMode){const want=46+i*38;let acc=0,pt=trail[trail.length-1]||P,prev={x:P.x,y:P.y};for(const q of trail){acc+=Math.hypot(q.x-prev.x,q.y-prev.y);prev=q;if(acc>=want){pt=q;break}}
+    if(lineMode){const want=(save.buddy&&isFriend(save.buddy)?84:46)+i*38;let acc=0,pt=trail[trail.length-1]||P,prev={x:P.x,y:P.y};for(const q of trail){acc+=Math.hypot(q.x-prev.x,q.y-prev.y);prev=q;if(acc>=want){pt=q;break}}
       tx=pt.x+Math.sin(time*1.7+i*1.3)*6;ty=pt.y-4+Math.cos(time*1.3+i)*4}
     else{const a=time*.75+i*TAU/n,rr=60+(i%2)*18;tx=P.x+Math.cos(a)*rr;ty=P.y-6+Math.sin(a)*rr*.6}
     const ox=f.x,oy=f.y;f.x=lerp(f.x,tx,Math.min(1,dt*2.6));f.y=lerp(f.y,ty,Math.min(1,dt*2.6));const vx=f.x-ox,vy=f.y-oy;
@@ -834,6 +847,7 @@ function update(dt){
   if(started&&!room){chirpT-=dt;if(chirpT<0){chirpT=7+Math.random()*9;chirp()}}
 }
 let moteMode='#ffffff',persistT=0;const trail=[];
+function trailAt(want){let acc=0,prev={x:P.x,y:P.y};for(const q of trail){acc+=Math.hypot(q.x-prev.x,q.y-prev.y);prev=q;if(acc>=want)return q}return trail[trail.length-1]||null}
 function persistSoon(){clearTimeout(persistT);persistT=setTimeout(persist,1500)}
 // ---------- render ----------
 const CHARS=[
@@ -842,6 +856,9 @@ const CHARS=[
   {id:'kiko',name:'Kiko',skin:'#eec39a',hair:'#2fb8ac',style:'bob',outfit:'hoodie',o1:'#ffd23f',o2:'#fff3b0',acc:'catears',eye:'#1f7a73',shoe:'#ff8c42'},
   {id:'hana',name:'Hana',skin:'#f6cfae',hair:'#ffb3d9',style:'buns',outfit:'idol',o1:'#7ee0c3',o2:'#ffffff',acc:'headset',eye:'#d6336c',shoe:'#ffffff'},
   {id:'ren',name:'Ren',skin:'#d9a47c',hair:'#ff8c42',style:'sidetail',outfit:'overalls',o1:'#5b8def',o2:'#ffffff',acc:'flower',eye:'#7a3e12',shoe:'#c0392b'},
+  {id:'theo',name:'Theo',skin:'#e8b98f',hair:'#4a2e1e',style:'bob',outfit:'overalls',o1:'#8fbf6a',o2:'#d8c49a',acc:'sunhat',eye:'#5a3b2a',shoe:'#e0882f'},
+  {id:'kai',name:'Kai',skin:'#f1c9a0',hair:'#1d1b22',style:'bob',outfit:'hoodie',o1:'#5fae5a',o2:'#ff9c3a',acc:'none',eye:'#2b2b2b',shoe:'#ffffff'},
+  {id:'leo',name:'Leo',skin:'#f9dcc4',hair:'#f2d27a',style:'bob',outfit:'cape',o1:'#26336b',o2:'#9fc6ef',acc:'star',eye:'#3f7fd0',shoe:'#26336b'},
   {id:'bo',name:'Bo',skin:'#8d5a3b',hair:'#2b1d1a',style:'curly',outfit:'bunny',o1:'#ffffff',o2:'#ffb3cf',acc:'bunny',eye:'#2b1d1a',shoe:'#ff8fb1'},
 ];
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=amt<0?0:255,t=Math.abs(amt)/100;r=Math.round(r+(f-r)*t);g=Math.round(g+(f-g)*t);b=Math.round(b+(f-b)*t);return`rgb(${r},${g},${b})`}
@@ -913,7 +930,8 @@ const WEAR_SLOT={t_crown:'head',t_sungem:'neck',t_wand:'hand',t_teacup:'hand',t_
 // per character, as fractions of the portrait: head = [x, crown bottom y, crown width], neck = [x, y], hand = [x, y] (the free hand)
 const DRESS_AT={sunny:{head:[.6,.085,.46],neck:[.6,.42],hand:[.92,.62]},luna:{head:[.47,.07,.46],neck:[.47,.4],hand:[.86,.44]},
   kiko:{head:[.58,.105,.46],neck:[.58,.39],hand:[.9,.42]},hana:{head:[.62,.09,.46],neck:[.6,.4],hand:[.91,.42]},
-  ren:{head:[.38,.075,.46],neck:[.4,.375],hand:[.3,.55]},bo:{head:[.35,.21,.4],neck:[.35,.49],hand:[.07,.72]}};
+  ren:{head:[.38,.075,.46],neck:[.4,.375],hand:[.3,.55]},
+  theo:{head:[.54,.07,.46],neck:[.52,.36],hand:[.89,.32]},kai:{head:[.57,.06,.46],neck:[.55,.45],hand:[.8,.47]},leo:{head:[.56,.11,.44],neck:[.56,.39],hand:[.9,.5]},bo:{head:[.35,.21,.4],neck:[.35,.49],hand:[.07,.72]}};
 const wear=()=>save.wear||(save.wear={});
 const ownedTreasures=()=>LANDMARKS.filter(l=>l.treasure&&save.treasures.includes(l.id)).map(l=>l.treasure);
 function wornList(){const w=wear(),own=ownedTreasures();return['neck','head','hand'].map(k=>w[k]).filter(k=>k&&own.includes(k)&&ART[k])}
@@ -1002,14 +1020,14 @@ function render(){
   for(const b of wild){b.f=b.state==='hide'?.1:flapOf(b,b.state==='rest');if(b.state==='fly')shadowOf(x,b)}for(const f of friends){f.f=flapOf(f,false);shadowOf(x,f)}
   // y-sorted trees, buildings and the player
   const list=[];for(let j=r0;j<=r1;j++)for(let i=c0;i<=c1;i++)for(const t of tall[j*GW+i]){const w=t.kind==='lm'?t.lm.w:t.w;if(t.x>L-w&&t.x<R+w&&t.y>T-20&&t.y<B+(t.kind==='lm'?t.lm.h:260))list.push(t)}
-  if(started)list.push(P);list.sort((a,b)=>a.y-b.y);
-  for(const it of list){if(it===P)drawCharImg(x,P,curChar());else drawTreeOrLm(x,it)}
+  if(started)list.push(P);for(const a of AN)if(a.x>L-60&&a.x<R+60&&a.y>T-20&&a.y<B+80)list.push(a);list.sort((a,b)=>a.y-b.y);
+  for(const it of list){if(it===P)drawCharImg(x,P,curChar());else if(it.animal)drawAnimal(x,it);else drawTreeOrLm(x,it)}
   // butterflies
   let seen=false;for(const b of wild){if(b.x<L-40||b.x>R+40||b.y<T-40||b.y>B+60)continue;seen=true;drawFly(x,b.sp,b.x,b.y-b.z,b.rot,b.f,b.state==='hide'?b.u*.8:b.u)}if(seen||!started)lastSeen=time;
   for(const f of friends)drawFly(x,f.sp,f.x,f.y-f.z,f.rot,f.f,f.u);
   // ---- compose + modern layer ----
   compose(L,T);
-  glowRare(ctx,L,T,R,B);
+  glowRare(ctx,L,T,R,B);drawAnimalOverlay(ctx,L,T,R,B);
   for(const b of wild){if(b.state!=='hide'||b.x<L-30||b.x>R+30||b.y<T-30||b.y>B+30)continue;const near=Math.hypot(b.x-P.x,b.y-P.y)<260,per=near?1.3:2.4,ph=((time+b.ph0*3)%per)/per;
     if(ph<.35)twinkle(ctx,b.x,b.y-6,(near?9:7)*Math.sin(ph/.35*Math.PI))}
   // doorways glow softly so she knows she can go inside
@@ -1066,9 +1084,17 @@ function sizePortrait(cv){const css=Math.min(260,innerWidth-90,innerHeight*.42);
 function openPopup(seed){popSeed=seed;const g=G(seed);sizePortrait(popCanvas);setStars($('popStars'),g.rarity);$('popName').textContent=g.name;fillBadgeStrip('popBadge');$('popup').classList.add('show')}
 $('popOk').onclick=()=>{sTap();popSeed=null;$('popup').classList.remove('show')};
 function updateCount(bump){$('count').textContent=save.seeds.length;if(bump){const b=$('bookBtn');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
-let bookFav=false;
+let bookFav=false,bookAni=false;
 function openBook(){sTap();renderBook(false);refreshFollow();$('book').classList.add('show')}
 function renderBook(keepScroll){const grid=$('grid'),sy=grid.scrollTop;grid.innerHTML='';$('bookCount').textContent=save.seeds.length;
+  $('aniTab').classList.toggle('on',bookAni);
+  if(bookAni){$('favFilter').classList.remove('on');$('empty').style.display='none';grid.style.display='grid';
+    for(const a of ANIMALS){const h=hearts(a.id),fr=h>=3,b=document.createElement('button');b.className='cell acell'+(fr?'':' no')+(fr&&save.buddy===a.id?' buddy':'');
+      const im=new Image();im.src='animals/'+a.id+'.webp';im.alt='';const hs=document.createElement('div');hs.className='hearts';hs.textContent=fr?(save.buddy===a.id?'🐾':'💗💗💗'):(h?'💗'.repeat(h)+'🤍'.repeat(3-h):'?');
+      b.append(im,hs);b.setAttribute('aria-label',fr?a.name:'Not met yet');
+      b.onclick=()=>{initAudio();if(!fr&&!h){sTap();return}voice('name_'+a.id,a.name,true);if(fr){save.buddy=save.buddy===a.id?null:a.id;persist();if(save.buddy){const o=AN.find(x=>x.id===a.id);o.x=P.x-40;o.y=P.y+10}renderBook(true)}};
+      grid.append(b)}
+    if(keepScroll)grid.scrollTop=sy;return}
   $('favCount').textContent=`${save.friends.length}/${MAX_FRIENDS}`;$('favFilter').classList.toggle('on',bookFav);
   let list=bookFav?save.friends.filter(s=>owned.has(s)||save.seeds.includes(s)):[...save.seeds];
   const n=list.length;$('empty').style.display=n?'none':'flex';grid.style.display=n?'grid':'none';
@@ -1082,7 +1108,8 @@ function renderBook(keepScroll){const grid=$('grid'),sy=grid.scrollTop;grid.inne
 function toggleFriend(seed){initAudio();const i=save.friends.indexOf(seed);if(i>=0){save.friends.splice(i,1);sTap()}
   else{save.friends.push(seed);while(save.friends.length>MAX_FRIENDS)save.friends.shift();if(ac)note(1046.5,ac.currentTime,.3,'triangle',.08);chirp()}
   persist();syncFriends();checkBadges(true);if(isShown('book'))renderBook(true);if(detSeed!==null)refreshHeart()}
-$('favFilter').onclick=()=>{initAudio();sTap();bookFav=!bookFav;renderBook(false);$('grid').scrollTop=0};
+$('aniTab').onclick=()=>{initAudio();sTap();bookAni=!bookAni;bookFav=false;renderBook(false);$('grid').scrollTop=0};
+$('favFilter').onclick=()=>{initAudio();sTap();bookAni=false;bookFav=!bookFav;renderBook(false);$('grid').scrollTop=0};
 function refreshFollow(){$('followLine').classList.toggle('on',save.follow!=='circle');$('followCircle').classList.toggle('on',save.follow==='circle')}
 $('followLine').onclick=()=>{initAudio();save.follow='line';persist();refreshFollow();say('Follow me in a line!')};
 $('followCircle').onclick=()=>{initAudio();save.follow='circle';persist();refreshFollow();say('Fly around me in a circle!')};
@@ -1167,6 +1194,8 @@ const BADGES=[
   ...LAND_KEYS.map(k=>({id:'land_'+k,em:LANDS[k].em,label:`Explored ${LANDS[k].name}`,goal:2,val:()=>LANDMARKS.filter(l=>l.land===k&&save.landmarks.includes(l.id)).length})),
   {id:'lmall',em:'🗺️',label:'Found every place',goal:10,val:s=>s.lm},
   {id:'lands5',em:'🌍',label:'A butterfly from every land',goal:5,val:s=>s.landsCaught},
+  {id:'ani1',em:'🐾',label:'First animal friend',goal:1,val:()=>ANIMALS.filter(a=>isFriend(a.id)).length},
+  {id:'aniall',em:'🐰',label:'Every animal friend',goal:5,val:()=>ANIMALS.filter(a=>isFriend(a.id)).length},
   {id:'tr1',em:'💎',label:'First treasure',goal:1,val:s=>s.tr},
   {id:'trall',em:'🧰',label:'Every treasure',goal:6,val:s=>s.tr},
   {id:'res1',em:'✨',label:'A secret butterfly',goal:1,val:s=>s.residents},
@@ -1195,7 +1224,7 @@ function fillBadgeStrip(id){const el=$(id);el.innerHTML='';el.style.display='non
   el.append(m,t,sp);el.style.display='flex';sTrophy()}
 function sTrophy(){if(!ac)return;const t=ac.currentTime+.6;[1046.5,1318.5,1568].forEach((f,i)=>note(f,t+i*.07,.4,'triangle',.05))}
 let extraBadges=0;
-function badgeRank(b){const R={skate30:84,skate1:83,resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
+function badgeRank(b){const R={aniall:98.5,ani1:94,skate30:84,skate1:83,resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
 function updateBadgeCount(){$('bcount').textContent=save.badges.length}
 function nextBadge(){if(popSeed!==null||!badgeQueue.length)return;const b=badgeQueue.shift(),st=stats();badgeShowing=true;
   const box=$('bpMedal');box.innerHTML='';box.append(medalEl(b,st,true));$('bpName').textContent=b.label;$('badgePop').classList.add('show');
@@ -1245,6 +1274,86 @@ $('mapClose').onclick=()=>{sTap();$('mapView').classList.remove('show')};
 
 
 
+
+// ---------- animal friends ----------
+// One shy animal lives in each land. Friendship is three hearts: 1) stand still nearby until it feels safe,
+// 2) share the snack that grows in its land, 3) a gentle pet. Running at it makes it scamper off.
+const ANIMALS=[
+  {id:'bunny',name:'Clover',land:'meadow',food:'clover',calm:1.2,off:[-620,430]},
+  {id:'penguin',name:'Pip',land:'frost',food:'fish',calm:2,off:[520,260]},
+  {id:'fox',name:'Rusty',land:'woods',food:'berries',calm:3,off:[260,-520]},
+  {id:'fennec',name:'Sandy',land:'oasis',food:'melon',calm:2.4,off:[-560,-180]},
+  {id:'kitten',name:'Mittens',land:'castle',food:'milk',calm:2,off:[-280,520]}];
+const LAND_FOOD={meadow:'clover',frost:'fish',woods:'berries',oasis:'melon',castle:'milk'};
+const ANIMAL_H=50;
+const hearts=id=>(save.animals||(save.animals={}))[id]|0;
+const isFriend=id=>hearts(id)>=3;
+const foodN=f=>(save.food||(save.food={}))[f]|0;
+// homes keep clear of landmarks and ponds so the animals are easy to see
+function clearSpot(x,y){return LANDMARKS.every(l=>Math.hypot(x-l.x,y-(l.y-(l.h||l.w)*.3))>l.w*.75+140)&&OBST.every(o=>((x-o.cx)/(o.rx+90))**2+((y-o.cy)/(o.ry+90))**2>1)}
+const AN=ANIMALS.map(a=>{const c=LANDS[a.land].c;let r=Math.hypot(a.off[0],a.off[1]),an=Math.atan2(a.off[1],a.off[0]),hx=0,hy=0;
+  for(let k=0;k<48;k++){hx=clamp(c[0]+Math.cos(an)*r,260,W-260);hy=clamp(c[1]+Math.sin(an)*r,320,H-260);if(clearSpot(hx,hy)&&landOf(hx,hy)===a.land)break;an+=.55;if(k%12===11)r+=140}
+  return{...a,animal:true,x:hx,y:hy,hx,hy,tx:hx,ty:hy,t:0,state:'wander',trust:0,face:1,hop:0,moving:false,bub:null,bubT:0,happy:0,needSaid:false}});
+let foods=[],snackFor=null,petHintAt=-99;
+function anBubble(a,b,t=1.6){a.bub=b;a.bubT=t}
+function anMove(a,tx,ty,sp,dt){const dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);if(d<4){a.moving=false;return d}
+  a.x+=dx/d*Math.min(d,sp*dt);a.y+=dy/d*Math.min(d,sp*dt);if(Math.abs(dx)>3)a.face=dx>0?1:-1;a.moving=true;a.hop+=dt*14;collide(a);return d}
+function updateAnimals(dt){snackFor=null;
+  for(const a of AN){a.bubT-=dt;if(a.bubT<=0)a.bub=null;a.happy=Math.max(0,a.happy-dt);
+    const h=hearts(a.id),fr=h>=3,dx=P.x-a.x,dy=P.y-a.y,d=Math.hypot(dx,dy);
+    if(fr&&save.buddy===a.id&&!room){// buddy walks right behind her
+      const q=trailAt(34),tx=q?q.x:P.x-P.face*40,ty=q?q.y:P.y+6;const dd=Math.hypot(tx-a.x,ty-a.y);
+      if(dd>900){a.x=tx;a.y=ty}anMove(a,tx,ty,dd>80?260:dd>20?180:0,dt);if(dd<=20)a.moving=false;if(d<60&&!P.moving)a.face=dx>0?1:-1;continue}
+    if(room)continue;
+    if(a.state==='flee'){a.t-=dt;anMove(a,a.x-dx/(d||1)*80,a.y-dy/(d||1)*80,230,dt);if(a.t<=0){a.state='wander';a.t=1}continue}
+    if(!fr&&d<250){
+      if(h<1&&P.moving&&d<175&&a.trust<1){a.state='flee';a.t=.9;a.trust=0;anBubble(a,'💦');chatter('an_slow',1,18);continue}
+      if(!P.moving||h>=1){a.trust=Math.min(1,a.trust+dt/a.calm);if(a.trust<1)anBubble(a,'…',.3)}
+      if(a.trust>=1){if(h<1){save.animals[a.id]=1;persist();a.happy=1.2;anBubble(a,'💗');heartPop(a)}
+        // calm now: come closer and look at her
+        if(d>78)anMove(a,P.x-Math.sign(dx||1)*64,P.y+4,70,dt);else{a.moving=false;a.face=dx>0?1:-1}
+        if(d<150){if(hearts(a.id)===1)snackFor=a;else if(hearts(a.id)===2&&time-petHintAt>1.4){anBubble(a,'✋',1.2);petHintAt=time}}}
+      else a.moving=false;
+      continue}
+    if(d>=250)a.trust=Math.max(0,a.trust-dt*.3);
+    // wander around home
+    a.t-=dt;if(a.t<=0){const an=Math.random()*TAU,r=Math.random()*220;a.tx=a.hx+Math.cos(an)*r;a.ty=a.hy+Math.sin(an)*r*.7;a.t=2+Math.random()*3}
+    if(anMove(a,a.tx,a.ty,fr?55:42,dt)<6)a.moving=false;
+    if(fr&&d<140&&Math.random()<dt*.6){a.happy=.6;anBubble(a,'💗',1)}}
+  // snack button
+  const sb=$('snackBtn');if(snackFor&&!modalOpen()){const f=snackFor.food,n=foodN(f);
+    if(sb.dataset.f!==f){$('snackImg').src='animals/f_'+f+'.webp';sb.dataset.f=f}$('snackN').textContent=n;sb.classList.toggle('none',!n);
+    if(!sb.classList.contains('show')){sb.classList.add('show');if(n)chatter('an_hungry',1,8);else if(!snackFor.needSaid){snackFor.needSaid=true;chatter('an_need',1,4)}}}
+  else sb.classList.remove('show');
+  // snacks to gather in the land she is in
+  if(!room&&started){const land=landOf(P.x,P.y),f=LAND_FOOD[land];foods=foods.filter(o=>Math.hypot(o.x-P.x,o.y-P.y)<2200);
+    if(f&&foods.filter(o=>o.f===f).length<2){for(let k=0;k<6;k++){const an=Math.random()*TAU,r=420+Math.random()*520,x=clamp(P.x+Math.cos(an)*r,200,W-200),y=clamp(P.y+Math.sin(an)*r,260,H-200);
+      if(landOf(x,y)!==land)continue;const o={x,y,f,ph:Math.random()*6};collide(o);foods.push(o);break}}
+    for(let i=foods.length-1;i>=0;i--){const o=foods[i];if(Math.hypot(o.x-P.x,o.y-P.y)<40){foods.splice(i,1);save.food[o.f]=Math.min(9,foodN(o.f)+1);persist();
+      if(ac){const t=ac.currentTime;note(988,t,.12,'triangle',.07);note(1319,t+.07,.18,'triangle',.06)}if(!save.foodSaid){save.foodSaid=1;voice('an_food')}else chatter('an_food',.15,40)}}}}
+function heartPop(a){for(let i=0;i<10;i++){const an=-Math.PI/2+(Math.random()-.5)*1.6,sp=50+Math.random()*60;parts.push({x:a.x,y:a.y,z:30,vx:Math.cos(an)*sp*.6,vy:0,vz:60+Math.random()*70,life:0,max:.9+Math.random()*.4,c:i%2?'#ff8fb1':'#ffd1e0',sz:2.6,star:true})}}
+$('snackBtn').onclick=e=>{e.stopPropagation();initAudio();const a=snackFor;if(!a)return;const f=a.food;
+  if(!foodN(f)){voice('an_need',`Let's find a snack!`,true);return}
+  save.food[f]--;save.animals[a.id]=2;persist();a.happy=1.5;anBubble(a,'😋',1.6);heartPop(a);voice('an_yum','Yum!',true);
+  if(ac){const t=ac.currentTime;[660,880,1046].forEach((fq,i)=>note(fq,t+i*.09,.2,'triangle',.07))}$('snackBtn').classList.remove('show');
+  setTimeout(()=>{if(hearts(a.id)===2)chatter('an_pet',1,2)},1800)};
+// tap an animal: pet it (the last step to friendship, and friends love pets too)
+function tapAnimal(w){if(room)return false;let best=null,bd=48;for(const a of AN){const dd=Math.hypot(a.x-w.x,a.y-ANIMAL_H*.45-w.y);if(dd<bd){bd=dd;best=a}}
+  if(!best||Math.hypot(best.x-P.x,best.y-P.y)>170)return false;const h=hearts(best.id);if(h<2)return false;
+  best.happy=1.2;heartPop(best);if(ac){const t=ac.currentTime;note(784,t,.15,'sine',.08);note(1175,t+.1,.25,'sine',.07)}
+  if(h===2){save.animals[best.id]=3;if(!save.buddy)save.buddy=best.id;persist();checkBadges(false);
+    setTimeout(()=>{fanfare();openInfo('a_'+best.id,`${best.name} is your friend!`,'🐾 '+ANIMALS.filter(x=>isFriend(x.id)).length+' / '+ANIMALS.length,'an_friend');voice('an_friend','You made a new friend!')},350);
+    setTimeout(()=>{if(save.buddy===best.id)chatter('an_buddy',1,3)},4200)}
+  else anBubble(best,'💗',1.2);return true}
+function drawAnimal(x,a){const im=ART['a_'+a.id];if(!im)return;const h=ANIMAL_H,w=h*im.naturalWidth/im.naturalHeight,hop=a.moving?Math.abs(Math.sin(a.hop))*5:a.happy>0?Math.abs(Math.sin(time*12))*4:0,
+  br=a.moving?0:Math.sin(time*2.4+a.hx)*.02;x.save();x.translate(a.x,a.y);x.drawImage(SHADOW,-w*.42,-3,w*.84,7);x.translate(0,-hop);x.scale(-a.face*(1+br*.5),1+br);x.drawImage(im,-w/2,-h+2,w,h);x.restore()}
+function drawAnimalOverlay(c,L,T,R,B){
+  for(const o of foods){if(o.x<L-30||o.x>R+30||o.y<T-30||o.y>B+30)continue;const im=ART['f_'+o.f];if(!im)continue;const b=Math.sin(time*3+o.ph)*2,sz=24,w=sz*im.naturalWidth/im.naturalHeight;
+    const ph=((time+o.ph)%2)/2;if(ph<.3)twinkle(c,o.x+8,o.y-sz+b,6*Math.sin(ph/.3*Math.PI));c.drawImage(im,o.x-w/2,o.y-sz+b,w,sz)}
+  for(const a of AN){if(a.x<L-60||a.x>R+60||a.y<T-80||a.y>B+40)continue;const d=Math.hypot(P.x-a.x,P.y-a.y),h=hearts(a.id),top=a.y-ANIMAL_H-6;
+    if(h<3&&d<300){for(let i=0;i<3;i++){c.font='12px sans-serif';c.textAlign='center';c.globalAlpha=i<h?1:.35;c.fillText(i<h?'💗':'🤍',a.x+(i-1)*13,top)}c.globalAlpha=1}
+    if(a.bub){c.font='18px sans-serif';c.textAlign='center';const k=Math.min(1,a.bubT*4);c.globalAlpha=k;c.fillText(a.bub,a.x+14,top-(h<3&&d<300?14:0)-Math.sin(time*5)*1.5);c.globalAlpha=1}}}
+
 // ---------- photo booth ----------
 // Stage is 800x600; the saved photo adds a white instant-photo frame (880x748 JPEG, roughly 100 KB).
 const stage=$('stage'),stx=stage.getContext('2d'),SW=800,SH=600;
@@ -1283,6 +1392,10 @@ function buildCharStrip(){const st=$('charStrip');st.innerHTML='';
       buildCharStrip()}))}}
 function buildFlyStrip(){const st=$('flyStrip');st.innerHTML='';const seen=new Set(),list=[];
   for(const s of [...save.friends].reverse().concat([...save.seeds].reverse())){if(!seen.has(s)){seen.add(s);list.push(s)}if(list.length>=80)break}
+  for(const a of ANIMALS.filter(a=>isFriend(a.id))){const k='a_'+a.id;if(!ART[k])continue;const on=booth.flies.some(f=>f.art===k);
+    st.append(thumb(60,60,(c,w,h)=>{const im=ART[k],s2=Math.min(w/im.naturalWidth,h/im.naturalHeight)*.95;c.drawImage(im,(w-im.naturalWidth*s2)/2,(h-im.naturalHeight*s2)/2,im.naturalWidth*s2,im.naturalHeight*s2)},on?'on':'',a.name,()=>{
+      const i=booth.flies.findIndex(f=>f.art===k);if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=14)booth.flies.shift();booth.flies.push({art:k,x:200+Math.random()*400,y:SH*.8,s:1.6,rot:0,ph:Math.random()*6});voice('name_'+a.id,a.name,true)}
+      sTap();buildFlyStrip()}))}
   for(const l of LANDMARKS.filter(l=>l.treasure&&save.treasures.includes(l.id))){const k=l.treasure;if(!ART[k])continue;const on=booth.flies.some(f=>f.art===k);
     st.append(thumb(60,60,(c,w,h)=>{const im=ART[k],s2=Math.min(w/im.naturalWidth,h/im.naturalHeight)*.9;c.drawImage(im,(w-im.naturalWidth*s2)/2,(h-im.naturalHeight*s2)/2,im.naturalWidth*s2,im.naturalHeight*s2)},on?'on':'',l.tname,()=>{
       const i=booth.flies.findIndex(f=>f.art===k);if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=14)booth.flies.shift();booth.flies.push({art:k,x:150+Math.random()*500,y:120+Math.random()*300,s:1,rot:(Math.random()-.5)*.4,ph:Math.random()*6});chirp()}
@@ -1377,7 +1490,7 @@ $('photoSave').onclick=async()=>{sTap();const url=$('photoImg').src;try{const bl
 // ---------- voice clips (ElevenLabs, one narrator voice) ----------
 const VOICE_ALL=['hi_sunny','hi_luna','hi_kiko','hi_hana','hi_ren','hi_bo','catch1','catch2','rare','spotted','found','door','skate',
   'lm_windmill','lm_wishtree','lm_icepalace','lm_frozenlake','lm_suntemple','lm_oasis','lm_wizard','lm_mushroom','lm_castle','lm_rainbow',
-  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox','pb_hello','pb_cam','pb_face','pb_cheese','pb_wow','st1','st2','st3','st4'];
+  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox','an_slow','an_hungry','an_need','an_food','an_yum','an_pet','an_friend','an_buddy','hi_theo','hi_kai','hi_leo','name_bunny','name_penguin','name_fox','name_fennec','name_kitten','pb_hello','pb_cam','pb_face','pb_cheese','pb_wow','st1','st2','st3','st4'];
 const voiceBuf={};let voiceSrc=null,voiceGain=null,chatterAt=-99,ipClip=null,voicePreloaded=false;
 function vBuf(n){if(voiceBuf[n])return voiceBuf[n];return voiceBuf[n]=fetch(`voice/${n}.mp3`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej))).catch(e=>{delete voiceBuf[n];throw e})}
 function preloadVoice(){if(voicePreloaded||!ac)return;voicePreloaded=true;let i=0;const next=()=>{if(i<VOICE_ALL.length)vBuf(VOICE_ALL[i++]).catch(()=>{}).finally(next)};next();next()}
@@ -1420,7 +1533,7 @@ $('skateExit').onclick=e=>{e.stopPropagation();sTap();endSkate()};
 function toWorld(e){return{x:viewL+(e.clientX*DPR)/PD/S,y:viewT+(e.clientY*DPR)/PD/S}}
 let ptrDown=false;
 canvas.addEventListener('pointerdown',e=>{if(!started||modalOpen())return;initAudio();ptrDown=true;try{canvas.setPointerCapture(e.pointerId)}catch(_){}
-  const w=toWorld(e);let best=null,bd=46;for(const b of wild){const d=Math.hypot(b.x-w.x,b.y-b.z-w.y);if(d<bd){bd=d;best=b}}
+  const w=toWorld(e);if(tapAnimal(w)){ptrDown=false;return}let best=null,bd=46;for(const b of wild){const d=Math.hypot(b.x-w.x,b.y-b.z-w.y);if(d<bd){bd=d;best=b}}
   target=best?{b:best}:{x:w.x,y:w.y,hold:true};if(!movedOnce){movedOnce=true;$('hint').style.display='none'}});
 canvas.addEventListener('pointermove',e=>{if(!ptrDown||!target||target.b)return;const w=toWorld(e);target.x=w.x;target.y=w.y});
 const up=()=>{ptrDown=false;if(target)target.hold=false};
@@ -1446,7 +1559,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;dt60=dt*60;u
   if(popSeed!==null)drawPortrait(popCanvas,popSeed,time);if(detSeed!==null)drawPortrait(detCanvas,detSeed,time);
   requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown,discoverLandmark,vs:()=>({playing:!!voiceSrc,ipClip,n:Object.keys(voiceBuf).length})};
+window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown,discoverLandmark,AN,foods:()=>foods,vs:()=>({playing:!!voiceSrc,ipClip,n:Object.keys(voiceBuf).length})};
 })();
 </script>
 </body>
