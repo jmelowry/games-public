@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#86c96f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Butterflies">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Butterfly Friends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,6 +133,18 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 .stamp{width:54px;height:54px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(59,51,80,.12);font-family:'Pixelify Sans',Fredoka;font-weight:700;font-size:24px;color:#c9c1b0}
 .stamp img{max-width:46px;max-height:46px}
 .stamp.no{background:#efe9dc}
+.namerow{display:flex;align-items:center;gap:10px;justify-content:center}
+.btn.spk{height:48px;min-width:48px;width:48px;padding:0;border-radius:50%;flex:none}
+.btn.spk svg{width:28px;height:28px}
+.bstrip{display:none;align-items:center;gap:10px;background:#fff3c4;border-radius:20px;padding:6px 8px 6px 6px;margin-top:2px;max-width:100%;animation:pop .5s .35s both cubic-bezier(.2,1.6,.4,1)}
+.bstrip .medal.mini{width:52px;height:52px;flex:none;box-shadow:0 3px 0 #c98d12,inset 0 0 0 3px rgba(255,255,255,.55)}
+.bstrip .medal.mini canvas{width:46px;height:46px}.bstrip .medal.mini .num{font-size:22px}.bstrip .medal.mini .em{font-size:26px}.bstrip .medal.mini .st{font-size:11px}.bstrip .medal.mini .sub{font-size:9px;bottom:5px}
+.bstrip .blab{font-weight:700;font-size:15px;line-height:1.15;text-align:left}
+.badge{cursor:pointer}
+#skateHud{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);display:none;align-items:center;gap:12px;z-index:6}
+#skateHud.show{display:flex}
+.skpill{background:rgba(255,255,255,.95);border-radius:999px;padding:10px 18px;font-family:'Pixelify Sans',Fredoka;font-weight:700;font-size:26px;box-shadow:0 4px 0 rgba(59,51,80,.18)}
+#skateExit{width:64px;height:64px;margin:0}
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
 </style>
@@ -162,7 +178,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
   <div class="card">
     <canvas id="popCanvas" class="pix" style="width:260px;height:260px"></canvas>
     <div class="stars" id="popStars"></div>
-    <div class="name" id="popName"></div>
+    <div class="namerow"><div class="name" id="popName"></div><button class="btn spk" aria-label="Say it" data-say="pop"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="#3b3350" stroke="#3b3350" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke="#3b3350" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button></div>
+    <div class="bstrip" id="popBadge"></div>
     <button class="btn round" id="popOk" aria-label="OK"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
@@ -183,7 +200,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
     <button class="btn closeX" id="detailClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     <canvas id="detCanvas" class="pix" style="width:260px;height:260px"></canvas>
     <div class="stars" id="detStars"></div>
-    <div class="name" id="detName"></div>
+    <div class="namerow"><div class="name" id="detName"></div><button class="btn spk" aria-label="Say it" data-say="det"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="#3b3350" stroke="#3b3350" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke="#3b3350" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button></div>
     <button class="btn heartBtn" id="heartBtn" aria-label="Fly with me">🤍</button>
   </div>
 </div>
@@ -207,13 +224,15 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Fr
 </div>
 
 <button class="btn" id="mapBtn" aria-label="World map"><span class="em">🗺️</span></button>
+<div id="skateHud"><div class="skpill">❄️ <span id="skateCount">0</span></div><button class="btn round" id="skateExit" aria-label="Done skating"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 <div id="fade"></div>
 
 <div class="overlay dim" id="infoPop" style="z-index:13">
   <div class="card">
     <div style="position:relative;margin:10px"><div class="burstRays"></div><div id="ipImg"></div></div>
-    <div class="name" id="ipTitle"></div>
+    <div class="namerow"><div class="name" id="ipTitle"></div><button class="btn spk" aria-label="Say it" data-say="ip"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="#3b3350" stroke="#3b3350" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke="#3b3350" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button></div>
     <div class="small" id="ipSub" style="font-weight:600"></div>
+    <div class="bstrip" id="ipBadge"></div>
     <button class="btn round" id="ipOk" aria-label="OK"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
@@ -408,7 +427,7 @@ const LANDMARKS=[
   {id:'windmill',land:'meadow',name:'The Windmill',img:'windmill',ar:.82,x:CX+560,y:CY-380,w:230,room:'room_windmill',door:[.41,.83],treasure:'t_honey',tname:'Honey Pot'},
   {id:'wishtree',land:'meadow',name:'The Wishing Tree',img:'wishing_tree',ar:.898,x:CX-620,y:CY+460,w:320,kind:'tree'},
   {id:'icepalace',land:'frost',name:'The Ice Palace',img:'ice_palace',ar:.947,x:CX+150,y:1350,w:430,room:'room_ice',door:[.49,.8],treasure:'t_crown',tname:'Snowflake Crown'},
-  {id:'frozenlake',land:'frost',name:'The Frozen Lake',img:'frozen_lake',ar:1.333,x:CX-1150,y:2050,w:520,kind:'water'},
+  {id:'frozenlake',land:'frost',name:'The Frozen Lake',img:'frozen_lake',ar:1.333,x:CX-1150,y:2150,w:720,kind:'water',skate:true},
   {id:'suntemple',land:'oasis',name:'The Sun Temple',img:'sun_temple',ar:1.145,x:CX+700,y:H-1050,w:400,room:'room_sun',door:[.4,.82],treasure:'t_sungem',tname:'Sun Gem'},
   {id:'oasis',land:'oasis',name:'The Oasis Spring',img:'oasis_spring',ar:1.228,x:CX-700,y:H-1700,w:440,kind:'water'},
   {id:'wizard',land:'woods',name:"The Wizard's Tower",img:'wizard_tower',ar:.538,x:1250,y:CY-450,w:200,room:'room_wizard',door:[.27,.97],treasure:'t_wand',tname:'Star Wand'},
@@ -419,7 +438,7 @@ const LANDMARKS=[
 const OBST=[];// solid ellipses
 for(const lm of LANDMARKS){lm.h=lm.w/lm.ar;
   if(lm.room){lm.dx=lm.x+(lm.door[0]-.5)*lm.w;lm.dy=lm.y-lm.h+lm.h*lm.door[1];const ry=lm.h*.17;OBST.push({cx:lm.x,cy:lm.dy-ry-8,rx:lm.w*.41,ry,lm})}
-  else if(lm.kind==='water')OBST.push({cx:lm.x,cy:lm.y-lm.h*.5,rx:lm.w*.33,ry:lm.h*.27,lm});
+  else if(lm.kind==='water')OBST.push({cx:lm.x,cy:lm.y-lm.h*.5,rx:lm.w*(lm.skate?.39:.33),ry:lm.h*(lm.skate?.31:.27),lm,skate:!!lm.skate});
   else if(lm.kind==='tree')OBST.push({cx:lm.x,cy:lm.y-lm.h*.11,rx:lm.w*.13,ry:lm.h*.05,lm});
   lm.front={x:lm.room?lm.dx:lm.x,y:(lm.room?lm.dy:lm.y)+24}}
 // meadow ponds (painted pond art)
@@ -497,12 +516,20 @@ function buildChunk(i,j){
   return c}
 // ---------- persistence ----------
 const KEY='butterfly-friends-v1';
-let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:''};
+let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:'',flakes:0};
 const owned=new Set();
 const validSeed=n=>Number.isInteger(n)&&n>=0&&n<0x40000000;
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&Array.isArray(s.seeds)){save.seeds=s.seeds.filter(validSeed);save.friends=(s.friends||[]).filter(validSeed);save.sound=s.sound!==false;save.played=!!s.played;if(typeof s.char==='string')save.char=s.char;if(Array.isArray(s.badges))save.badges=s.badges.filter(x=>typeof x==='string');const ids=new Set(LANDMARKS.map(l=>l.id));if(Array.isArray(s.landmarks))save.landmarks=s.landmarks.filter(x=>ids.has(x));if(Array.isArray(s.treasures))save.treasures=s.treasures.filter(x=>ids.has(x));if(s.lands&&typeof s.lands==='object')for(const k of LAND_KEYS)if(Number.isFinite(s.lands[k]))save.lands[k]=s.lands[k];if(typeof s.exp==='string'){save.exp=s.exp;expFromStr(s.exp)}}}catch(e){}
+function loadSave(){try{const raw=localStorage.getItem(KEY);let src=KEY;if(raw){try{JSON.parse(raw)}catch(e){src=rescueSave();try{localStorage.setItem(KEY+'-broken-'+Date.now(),raw)}catch(_){}if(!src){saveLoadedOK=true}}}const s=JSON.parse((src&&localStorage.getItem(src))||'null');if(s&&Array.isArray(s.seeds)){save.seeds=s.seeds.filter(validSeed);save.friends=(s.friends||[]).filter(validSeed);save.sound=s.sound!==false;save.played=!!s.played;if(typeof s.char==='string')save.char=s.char;if(Array.isArray(s.badges))save.badges=s.badges.filter(x=>typeof x==='string');const ids=new Set(LANDMARKS.map(l=>l.id));if(Array.isArray(s.landmarks))save.landmarks=s.landmarks.filter(x=>ids.has(x));if(Array.isArray(s.treasures))save.treasures=s.treasures.filter(x=>ids.has(x));if(s.lands&&typeof s.lands==='object')for(const k of LAND_KEYS)if(Number.isFinite(s.lands[k]))save.lands[k]=s.lands[k];if(Number.isFinite(s.flakes))save.flakes=s.flakes;if(typeof s.exp==='string'){save.exp=s.exp;expFromStr(s.exp)}}}catch(e){}
   save.seeds=[...new Set(save.seeds)];save.seeds.forEach(s=>owned.add(s));save.friends=save.friends.filter(s=>owned.has(s)).slice(-MAX_FRIENDS)}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}}
+// Saves are only ever added to: new fields get defaults, nothing is dropped, and the last good copy is kept as a spare.
+let saveLoadedOK=true;
+function persist(){if(!saveLoadedOK)return;try{const prev=localStorage.getItem(KEY);const next=JSON.stringify(save);
+    if(prev&&prev!==next){try{const p=JSON.parse(prev);if(Array.isArray(p.seeds)&&p.seeds.length>save.seeds.length){mergeSeedsSilently(p.seeds)}}catch(e){}localStorage.setItem(KEY+'-prev',prev)}
+    localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}}
+function mergeSeedsSilently(list){for(const x of list)if(validSeed(x)&&!owned.has(x)){owned.add(x);save.seeds.push(x)}}
+function rescueSave(){// if the main save is unreadable, fall back to the spare copy instead of starting over
+  for(const k of[KEY,KEY+'-prev']){try{const raw=localStorage.getItem(k);if(!raw)continue;const s=JSON.parse(raw);if(s&&Array.isArray(s.seeds))return k}catch(e){}}return null}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
 const bitsOf=list=>LANDMARKS.reduce((a,l,i)=>a|(list.includes(l.id)?1<<i:0),0);
 const encode=()=>'bf-'+save.seeds.map(s=>s.toString(36)).join('-')+'--l'+bitsOf(save.landmarks).toString(36)+'--t'+bitsOf(save.treasures).toString(36);
 let pendingExtras=null;
@@ -532,10 +559,11 @@ async function playMusic(land){if(!ac)return;if(!musicGain){musicGain=ac.createG
     const src=ac.createBufferSource();src.buffer=buf;src.connect(g);g.connect(musicGain);src.start();src._g=g;musicSrc=src;
     src.onended=()=>{if(musicSrc===src){musicSrc=null;musicList=null}};
     if(old){old.onended=null;old._g.gain.cancelScheduledValues(t);old._g.gain.setValueAtTime(old._g.gain.value,t);old._g.gain.linearRampToValueAtTime(0,t+2);try{old.stop(t+2.1)}catch(e){}}}
-  catch(e){delete musicBuf[url];musicList=null}}
+  catch(e){delete musicBuf[url];musicRetryAt=time+8}}
+let musicRetryAt=0;
 function musicTick(){if(!ac||!started)return;if(musicGain)musicGain.gain.setTargetAtTime(save.sound?(room?.22:.36):0,ac.currentTime,.3);
   const land=room?room.lm.land:landOf(P.x,P.y);if(land!==curMusicLand){curMusicLand=land;if(tracksFor(land)!==musicList)playMusic(land)}
-  if(!musicList)playMusic(curMusicLand)}
+  if(!musicList||(musicRetryAt&&time>musicRetryAt&&!musicSrc)){musicRetryAt=0;playMusic(curMusicLand)}}
 // ---------- state ----------
 const canvas=$('game'),ctx=canvas.getContext('2d');
 const lo=document.createElement('canvas'),lctx=lo.getContext('2d');
@@ -607,8 +635,31 @@ function modalOpen(){return !started||popSeed!==null||badgeShowing||infoShowing|
 function collide(p){p.x=clamp(p.x,120,W-120);p.y=clamp(p.y,200,H-70);
   for(let it=0;it<2;it++){const cx=(p.x/CELL)|0,cy=(p.y/CELL)|0;
     for(let i=cx-1;i<=cx+1;i++)for(let j=cy-1;j<=cy+1;j++){if(i<0||j<0||i>=GW||j>=GH)continue;for(const t of tall[i+j*GW]){if(t.kind!=='tree')continue;const dx=p.x-t.x,dy=(p.y-t.y)*1.5,d=Math.hypot(dx,dy),m=24;if(d<m&&d>.01){p.x=t.x+dx/d*m;p.y=t.y+dy/d*m/1.5}}}
-    for(const o of OBST){const dx=(p.x-o.cx)/o.rx,dy=(p.y-o.cy)/o.ry,d=Math.hypot(dx,dy);if(d<1&&d>1e-4){p.x=o.cx+dx/d*o.rx*1.002;p.y=o.cy+dy/d*o.ry*1.002}}}}
+    for(const o of OBST){if(o.skate&&skateCool<=0)continue;const dx=(p.x-o.cx)/o.rx,dy=(p.y-o.cy)/o.ry,d=Math.hypot(dx,dy);if(d<1&&d>1e-4){p.x=o.cx+dx/d*o.rx*1.002;p.y=o.cy+dy/d*o.ry*1.002}}}}
 
+
+// ---------- ice skating on the Frozen Lake ----------
+let skate=null,skateCool=0;const LAKE=OBST.find(o=>o.skate);
+function inLake(x,y,k=1){const dx=(x-LAKE.cx)/(LAKE.rx*k),dy=(y-LAKE.cy)/(LAKE.ry*k);return dx*dx+dy*dy<1}
+function startSkate(){skate={vx:0,vy:0,flakes:[],got:0,t:0};P.skating=true;P.lean=0;target=null;$('skateHud').classList.add('show');$('skateCount').textContent='0';
+  for(let i=0;i<5;i++)addFlake();if(ac){const t=ac.currentTime;[784,988,1175].forEach((f,i)=>note(f,t+i*.08,.4,'sine',.06))}}
+function addFlake(){for(let i=0;i<20;i++){const a=Math.random()*TAU,r=Math.sqrt(Math.random())*.82,x=LAKE.cx+Math.cos(a)*LAKE.rx*r,y=LAKE.cy+Math.sin(a)*LAKE.ry*r;if(Math.hypot(x-P.x,y-P.y)>60){skate.flakes.push({x,y,ph:Math.random()*TAU,born:time});return}}}
+function endSkate(){if(!skate)return;skate=null;P.skating=false;P.lean=0;$('skateHud').classList.remove('show');skateCool=1.5;P.x=LAKE.cx;P.y=LAKE.cy+LAKE.ry+26;target=null;persist();checkBadges(false);if(cardBadge){openInfo('frozen_lake','Great skating!',`❄️ ${save.flakes} snowflakes so far`)}}
+function skateStep(dt,mx,my){const acc=320;skate.vx+=mx*acc*dt;skate.vy+=my*acc*dt;const f=Math.pow(.55,dt);skate.vx*=f;skate.vy*=f;
+  const sp=Math.hypot(skate.vx,skate.vy),mxs=290;if(sp>mxs){skate.vx*=mxs/sp;skate.vy*=mxs/sp}
+  P.x+=skate.vx*dt;P.y+=skate.vy*dt;
+  const dx=(P.x-LAKE.cx)/LAKE.rx,dy=(P.y-LAKE.cy)/LAKE.ry,d=Math.hypot(dx,dy);
+  if(d>.96){const nx=dx/d/LAKE.rx,ny=dy/d/LAKE.ry,nl=Math.hypot(nx,ny),ux=nx/nl,uy=ny/nl,dot=skate.vx*ux+skate.vy*uy;if(dot>0){skate.vx-=1.6*dot*ux;skate.vy-=1.6*dot*uy}P.x=LAKE.cx+dx/d*.96*LAKE.rx;P.y=LAKE.cy+dy/d*.96*LAKE.ry}
+  P.moving=false;if(Math.abs(skate.vx)>12)P.face=skate.vx>0?1:-1;P.lean=lerp(P.lean,clamp(skate.vx/mxs,-1,1)*.22,Math.min(1,dt*5));
+  if(sp>70&&Math.random()<dt*14)parts.push({x:P.x+(Math.random()-.5)*10,y:P.y,z:1,vx:-skate.vx*.1,vy:-skate.vy*.1,vz:10,life:0,max:.6,c:'#ffffff',sz:2.2});
+  for(let i=skate.flakes.length-1;i>=0;i--){const fl=skate.flakes[i];if(Math.hypot(fl.x-P.x,fl.y-(P.y-10))<30){skate.flakes.splice(i,1);skate.got++;save.flakes++;$('skateCount').textContent=skate.got;
+      const sc=[523.25,587.33,659.25,783.99,880,1046.5,1174.7,1318.5];if(ac)note(sc[skate.got%sc.length],ac.currentTime,.35,'triangle',.08);
+      for(let k=0;k<10;k++){const a=Math.random()*TAU,v=40+Math.random()*60;parts.push({x:fl.x,y:fl.y,z:14,vx:Math.cos(a)*v,vy:Math.sin(a)*v*.6,vz:40+Math.random()*40,life:0,max:.6,c:k%2?'#dff3ff':'#fff',sz:2,star:true})}
+      setTimeout(()=>{if(skate)addFlake()},700)}}
+  if(Math.random()<dt*.5)persistSoon()}
+function drawFlakes(c){for(const fl of skate.flakes){const age=Math.min(1,(time-fl.born)*2),r=(9+Math.sin(time*3+fl.ph)*1.5)*age,y=fl.y-14+Math.sin(time*2+fl.ph)*3;
+  c.globalCompositeOperation='lighter';c.globalAlpha=.7;c.drawImage(GLOW_WHITE,fl.x-r*2,y-r*2,r*4,r*4);c.globalCompositeOperation='source-over';c.globalAlpha=1;
+  c.strokeStyle='#8fd3ff';c.lineWidth=2.2;c.lineCap='round';c.beginPath();for(let k=0;k<6;k++){const a=k/6*TAU+time*.8;c.moveTo(fl.x,y);c.lineTo(fl.x+Math.cos(a)*r,y+Math.sin(a)*r);const bx=fl.x+Math.cos(a)*r*.6,by=y+Math.sin(a)*r*.6;c.moveTo(bx,by);c.lineTo(bx+Math.cos(a+.7)*r*.3,by+Math.sin(a+.7)*r*.3);c.moveTo(bx,by);c.lineTo(bx+Math.cos(a-.7)*r*.3,by+Math.sin(a-.7)*r*.3)}c.stroke()}}
 // ---------- rooms (interiors) ----------
 const RW=640,RH=476;
 const ROOMS={room_ice:{floor:[.18,.82,.42,.84],tre:[.2,.7],fx:'snow'},room_wizard:{floor:[.24,.78,.36,.8],tre:[.7,.42],fx:'firefly'},room_sun:{floor:[.12,.88,.4,.74],tre:[.86,.6],fx:'sparkle'},
@@ -641,8 +692,10 @@ function update(dt){
     if(mx||my){const l=Math.hypot(mx,my);mx/=l;my/=l;target=null}
     else if(target){if(target.b&&!wild.includes(target.b))target=null;else{const tx=target.b?target.b.x:target.x,ty=target.b?target.b.y+8:target.y,dx=tx-P.x,dy=ty-P.y,d=Math.hypot(dx,dy);if(d>5){mx=dx/d;my=dy/d}else if(!target.hold)target=null}}
   }
-  if(mx||my){const sp=room?150:180;P.x+=mx*sp*dt;P.y+=my*sp*dt;P.moving=true;P.walk+=dt*12;if(Math.abs(mx)>.2)P.face=mx>0?1:-1;room?collideRoom(P):collide(P)}else P.moving=false;
-  P.swing=Math.max(0,P.swing-dt);
+  if(skate&&!modal){skateStep(dt,mx,my)}
+  else if(mx||my){const sp=room?150:180;P.x+=mx*sp*dt;P.y+=my*sp*dt;P.moving=true;P.walk+=dt*12;if(Math.abs(mx)>.2)P.face=mx>0?1:-1;room?collideRoom(P):collide(P)}else P.moving=false;
+  P.swing=Math.max(0,P.swing-dt);skateCool=Math.max(0,skateCool-dt);
+  if(started&&!room&&!skate&&!modal&&skateCool<=0&&LAKE&&inLake(P.x,P.y,.97))startSkate();
   // camera
   const hw=lo.width/2/S,hh=lo.height/2/S,k=Math.min(1,dt*(started?6:1));
   if(room){cam.x=RW<2*hw?RW/2:clamp(lerp(cam.x,P.x,k),hw,RW-hw);cam.y=RH<2*hh?RH/2:clamp(lerp(cam.y,P.y,k),hh,RH-hh)}
@@ -780,7 +833,7 @@ function charSprite(id){const im=charImg(id);if(!im.complete||!im.naturalWidth)r
 function drawCharImg(x,p,c){const sp=charSprite(c.id);if(!sp){drawChar(x,p,c);return}
   const t=time,mv=p.moving,hop=p.swing>0?Math.sin((1-p.swing/.35)*Math.PI)*10:0;
   const bob=mv?Math.abs(Math.sin(p.walk))*3.2:0,breathe=mv?0:Math.sin(t*2.2)*.018;
-  const sq=mv?Math.sin(p.walk*2)*.035:0,rot=mv?Math.sin(p.walk)*.07:Math.sin(t*1.3)*.015;
+  const sq=mv?Math.sin(p.walk*2)*.035:0,rot=p.skating?p.lean:mv?Math.sin(p.walk)*.07:Math.sin(t*1.3)*.015;
   x.save();x.translate(p.x,p.y);const shw=sp.w*.62*(1-hop/40);x.drawImage(SHADOW,-shw,-5,shw*2,10);
   x.translate(0,-bob-hop);x.rotate(rot);x.scale(p.face*(1-sq+breathe*.5),1+sq+breathe);
   x.drawImage(sp.c,-sp.w/2,-sp.h+2,sp.w,sp.h);x.restore()}
@@ -854,6 +907,7 @@ function render(){
   // doorways glow softly so she knows she can go inside
   for(const lm of LANDMARKS){if(!lm.room||lm.dx<L-40||lm.dx>R+40||lm.dy<T-40||lm.dy>B+40)continue;const g=16+Math.sin(time*3)*3;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55;ctx.drawImage(GLOW_GOLD,lm.dx-g,lm.dy-g*.6,g*2,g*1.2);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
   for(const p of PONDS){if(!ART.pond)break;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.lineCap='round';for(let i=0;i<3;i++){const s2=(time*.5+i*.31)%1;ctx.globalAlpha=Math.sin(s2*Math.PI)*.7;const sx=p.cx+(i-1)*p.w*.15,sy=p.cy+((i*37)%5-2)*p.h*.06;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+10,sy);ctx.stroke()}ctx.globalAlpha=1}
+  if(skate)drawFlakes(ctx);
   drawMotes(ctx);drawParts(ctx);
   if(started&&target&&!target.b&&P.moving){ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=2;const r=7+Math.sin(time*8)*1.5;ctx.beginPath();ctx.ellipse(target.x,target.y,r*1.4,r*.7,0,0,TAU);ctx.stroke()}
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(VIG,0,0);
@@ -901,8 +955,8 @@ function setStars(el,r){el.textContent='★'.repeat(r+1);el.className='stars'+(r
 // ---------- UI ----------
 const popCanvas=$('popCanvas'),detCanvas=$('detCanvas');
 function sizePortrait(cv){const css=Math.min(260,innerWidth-90,innerHeight*.42);cv.style.width=cv.style.height=css+'px';cv.width=cv.height=Math.round(css*DPR)}
-function openPopup(seed){popSeed=seed;const g=G(seed);sizePortrait(popCanvas);setStars($('popStars'),g.rarity);$('popName').textContent=g.name;$('popup').classList.add('show')}
-$('popOk').onclick=()=>{sTap();popSeed=null;$('popup').classList.remove('show');setTimeout(nextBadge,250)};
+function openPopup(seed){popSeed=seed;const g=G(seed);sizePortrait(popCanvas);setStars($('popStars'),g.rarity);$('popName').textContent=g.name;fillBadgeStrip('popBadge');$('popup').classList.add('show')}
+$('popOk').onclick=()=>{sTap();popSeed=null;$('popup').classList.remove('show')};
 function updateCount(bump){$('count').textContent=save.seeds.length;if(bump){const b=$('bookBtn');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
 function openBook(){sTap();const grid=$('grid');grid.innerHTML='';const n=save.seeds.length;$('bookCount').textContent=n;$('empty').style.display=n?'none':'flex';grid.style.display=n?'grid':'none';
   const sorted=[...save.seeds].sort((a,b)=>{const ga=G(a),gb=G(b);const ha=ga.pastel?ga.hue+0.5:ga.hue,hb=gb.pastel?gb.hue+0.5:gb.hue;return((ha%360)+360)%360-((hb%360)+360)%360});
@@ -943,7 +997,7 @@ function buildChars(){const box=$('chars');box.innerHTML='';charCards.length=0;
   for(const c of CHARS){const b=document.createElement('button');b.className='ccard'+(c.id===curChar().id?' sel':'');let cv=null;const img=new Image();img.alt=c.name;img.src='chars/'+c.id+'.webp';img.draggable=false;
     const o0={b,cv:null,c};img.onerror=()=>{cv=document.createElement('canvas');cv.className='pix';cv.width=Math.round(50*2.2*DPR);cv.height=Math.round(82*2.2*DPR);img.replaceWith(cv);o0.cv=cv};
     const nm=document.createElement('div');nm.textContent=c.name;b.append(img,nm);
-    b.onclick=()=>{initAudio();save.char=c.id;persist();charCards.forEach(o=>o.b.classList.toggle('sel',o.c===c));if(ac){const t=ac.currentTime;note(880,t,.15,'triangle',.07);note(1318.5,t+.08,.25,'triangle',.06)}renderHudChar()};
+    b.onclick=()=>{initAudio();say(c.name);save.char=c.id;persist();charCards.forEach(o=>o.b.classList.toggle('sel',o.c===c));if(ac){const t=ac.currentTime;note(880,t,.15,'triangle',.07);note(1318.5,t+.08,.25,'triangle',.06)}renderHudChar()};
     box.append(b);charCards.push(o0)}}
 function drawCharCards(){charCards.forEach((o,i)=>{if(o.cv)renderChar(o.cv,o.c,CROP_FULL,.9,o.c.id===save.char,i*1.3)})}
 function renderHudChar(){$('charBtn').querySelector('.face').style.backgroundImage=`url(chars/${curChar().id}.webp)`;charImg(curChar().id)}
@@ -982,6 +1036,8 @@ const BADGES=[
   {id:'trall',em:'🧰',label:'Every treasure',goal:6,val:s=>s.tr},
   {id:'res1',em:'✨',label:'A secret butterfly',goal:1,val:s=>s.residents},
   {id:'resall',em:'👑',label:'All 10 secret butterflies',goal:10,val:s=>s.residents},
+  {id:'skate1',em:'⛸️',label:'Went ice skating',goal:1,val:()=>save.flakes},
+  {id:'skate30',em:'❄️',label:'Caught 30 snowflakes on the ice',goal:30,val:()=>save.flakes},
 ];
 function medalEl(b,st,unlocked){const m=document.createElement('div');m.className='medal'+(unlocked?'':' locked');
   if(b.color){m.style.background=`radial-gradient(circle at 35% 30%,#fff,${b.color} 60%)`;m.style.boxShadow=`0 5px 0 ${shade(b.color,-30)},inset 0 0 0 5px rgba(255,255,255,.55)`}
@@ -996,16 +1052,22 @@ function medalEl(b,st,unlocked){const m=document.createElement('div');m.classNam
 let badgeQueue=[];
 function checkBadges(silent){const st=stats(),have=new Set(save.badges),fresh=[];
   for(const b of BADGES)if(!have.has(b.id)&&b.val(st)>=b.goal){save.badges.push(b.id);fresh.push(b)}
-  if(fresh.length){persist();updateBadgeCount();if(!silent){const best=fresh.slice().sort((x,y)=>badgeRank(y)-badgeRank(x))[0];badgeQueue=[best];extraBadges=fresh.length-1}}return fresh}
+  if(fresh.length){persist();updateBadgeCount();if(!silent){cardBadge=fresh.slice().sort((x,y)=>badgeRank(y)-badgeRank(x))[0];extraBadges=fresh.length-1}}return fresh}
+let cardBadge=null;
+function fillBadgeStrip(id){const el=$(id);el.innerHTML='';el.style.display='none';if(!cardBadge)return;const b=cardBadge;cardBadge=null;
+  const m=medalEl(b,stats(),true);m.classList.add('mini');const t=document.createElement('div');t.className='blab';t.textContent=b.label+(extraBadges>0?`  +${extraBadges}`:'');extraBadges=0;
+  const sp=document.createElement('button');sp.className='btn spk';sp.setAttribute('aria-label','Say it');sp.innerHTML=SND_ON;sp.onclick=e=>{e.stopPropagation();say('New badge! '+b.label)};
+  el.append(m,t,sp);el.style.display='flex';sTrophy()}
+function sTrophy(){if(!ac)return;const t=ac.currentTime+.6;[1046.5,1318.5,1568].forEach((f,i)=>note(f,t+i*.07,.4,'triangle',.05))}
 let extraBadges=0;
-function badgeRank(b){const R={resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
+function badgeRank(b){const R={skate30:84,skate1:83,resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
 function updateBadgeCount(){$('bcount').textContent=save.badges.length}
 function nextBadge(){if(popSeed!==null||!badgeQueue.length)return;const b=badgeQueue.shift(),st=stats();badgeShowing=true;
   const box=$('bpMedal');box.innerHTML='';box.append(medalEl(b,st,true));$('bpName').textContent=b.label;$('badgePop').classList.add('show');
   if(ac){const t=ac.currentTime+.05;[523.25,659.25,783.99,1046.5].forEach((f,i)=>note(f,t+i*.12,.5,'square',.035));note(1046.5,t+.5,.9,'triangle',.09);note(1568,t+.5,.9,'triangle',.05)}}
 $('bpOk').onclick=()=>{sTap();$('badgePop').classList.remove('show');badgeShowing=false;if(extraBadges>0){toast(`🏆 +${extraBadges}`);extraBadges=0}};
 function openBadgeWall(){sTap();const st=stats(),have=new Set(save.badges),g=$('bgrid');g.innerHTML='';$('bwCount').textContent=`${have.size} / ${BADGES.length}`;
-  for(const b of BADGES){const un=have.has(b.id),d=document.createElement('div');d.className='badge';d.append(medalEl(b,st,un));
+  for(const b of BADGES){const un=have.has(b.id),d=document.createElement('div');d.className='badge';d.append(medalEl(b,st,un));d.onclick=()=>say(un?b.label:'Not found yet. '+b.label);
     if(!un&&b.goal>1){const p=document.createElement('div');p.className='prog';p.innerHTML=`<i style="width:${Math.min(100,b.val(st)/b.goal*100)}%"></i>`;d.append(p)}
     const l=document.createElement('div');l.className='lab';l.textContent=b.label;d.append(l);g.append(d)}
   $('badgeWall').classList.add('show')}
@@ -1015,13 +1077,13 @@ $('bwClose').onclick=()=>{sTap();$('badgeWall').classList.remove('show')};
 // ---------- landmarks, treasures, map ----------
 function fanfare(){if(!ac)return;const t=ac.currentTime+.05;[523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>note(f,t+i*.1,.5,'triangle',.08));note(1568,t+.5,.9,'triangle',.06)}
 function openInfo(imgKey,title,sub){infoShowing=true;const box=$('ipImg');box.innerHTML='';const im=ART[imgKey];if(im){const c=im.cloneNode();c.alt='';box.append(c)}
-  $('ipTitle').textContent=title;$('ipSub').textContent=sub||'';$('infoPop').classList.add('show')}
-$('ipOk').onclick=()=>{sTap();$('infoPop').classList.remove('show');infoShowing=false;setTimeout(nextBadge,250)};
+  $('ipTitle').textContent=title;$('ipSub').textContent=sub||'';fillBadgeStrip('ipBadge');$('infoPop').classList.add('show')}
+$('ipOk').onclick=()=>{sTap();$('infoPop').classList.remove('show');infoShowing=false};
 function discoverLandmark(lm){save.landmarks.push(lm.id);persist();fanfare();
-  const n=save.landmarks.length;openInfo(lm.img,`You found ${lm.name}!`,`${LANDS[lm.land].em} ${LANDS[lm.land].name} · ${n} of ${LANDMARKS.length} places`);checkBadges(false)}
+  const n=save.landmarks.length;checkBadges(false);openInfo(lm.img,`You found ${lm.name}!`,`${LANDS[lm.land].em} ${LANDS[lm.land].name} · ${n} of ${LANDMARKS.length} places`)}
 function collectTreasure(lm){save.treasures.push(lm.id);persist();fanfare();
   for(let i=0;i<30;i++){const a=Math.random()*TAU,s=40+Math.random()*100;parts.push({x:P.x,y:P.y,z:30,vx:Math.cos(a)*s,vy:Math.sin(a)*s*.6,vz:60+Math.random()*90,life:0,max:1+Math.random()*.6,c:i%2?'#ffe27a':'#fff',sz:2.5,star:true})}
-  openInfo(lm.treasure,`A treasure: the ${lm.tname}!`,`${save.treasures.length} of ${LANDMARKS.filter(l=>l.treasure).length} treasures`);checkBadges(false)}
+  checkBadges(false);openInfo(lm.treasure,`A treasure: the ${lm.tname}!`,`${save.treasures.length} of ${LANDMARKS.filter(l=>l.treasure).length} treasures`)}
 
 const mapCanvas=$('mapCanvas');let fogC=mk(EXN,EXN),fogX=fogC.getContext('2d');
 function mapXY(x,y,s){return[s*(.07+.86*x/W),s*(.07+.86*y/H)]}
@@ -1045,6 +1107,21 @@ function drawMap(){const c=mapCanvas.getContext('2d'),s=mapCanvas.width;c.setTra
 $('mapBtn').onclick=openMap;
 $('mapClose').onclick=()=>{sTap();$('mapView').classList.remove('show')};
 
+
+// ---------- read-aloud (on-device speech, works in iOS Safari and home-screen apps) ----------
+let ttsVoice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^en(-|_)/i.test(v.lang));if(!vs.length)return null;
+  const pref=['Samantha','Ava','Allison','Susan','Karen','Moira','Tessa','Google US English','Microsoft Aria','Microsoft Jenny','Zira'];
+  for(const n of pref){const v=vs.find(v=>v.name.includes(n)&&/premium|enhanced/i.test(v.name))||vs.find(v=>v.name.includes(n));if(v)return v}
+  return vs.find(v=>/en-US/i.test(v.lang))||vs[0]}catch(e){return null}}
+try{speechSynthesis.onvoiceschanged=()=>{ttsVoice=pickVoice()};ttsVoice=pickVoice()}catch(e){}
+function say(text){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(!ttsVoice)ttsVoice=pickVoice();if(ttsVoice)u.voice=ttsVoice;u.lang=ttsVoice?ttsVoice.lang:'en-US';u.rate=.88;u.pitch=1.1;u.volume=1;speechSynthesis.speak(u)}catch(e){}}
+const STARWORDS=['One star','Two stars','Three stars','Four stars! A rainbow one'];
+document.addEventListener('click',e=>{const b=e.target.closest('.spk[data-say]');if(!b)return;e.stopPropagation();initAudio();const k=b.dataset.say;
+  if(k==='pop'&&popSeed!==null){const g=G(popSeed);say(`${g.name}! ${STARWORDS[g.rarity]}.`)}
+  else if(k==='det'&&detSeed!==null){const g=G(detSeed);say(`${g.name}. ${STARWORDS[g.rarity]}.`)}
+  else if(k==='ip')say($('ipTitle').textContent)},true);
+$('skateExit').onclick=e=>{e.stopPropagation();sTap();endSkate()};
 // ---------- input ----------
 function toWorld(e){return{x:viewL+(e.clientX*DPR)/PD/S,y:viewT+(e.clientY*DPR)/PD/S}}
 let ptrDown=false;
@@ -1075,7 +1152,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;dt60=dt*60;u
   if(popSeed!==null)drawPortrait(popCanvas,popSeed,time);if(detSeed!==null)drawPortrait(detCanvas,detSeed,time);
   requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__bf={LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown};
+window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown};
 })();
 </script>
 </body>
