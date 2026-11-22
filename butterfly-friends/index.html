@@ -145,6 +145,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 #skateHud.show{display:flex}
 .skpill{background:rgba(255,255,255,.95);border-radius:999px;padding:10px 18px;font-family:Andika,Fredoka,sans-serif;font-weight:700;font-size:26px;box-shadow:0 4px 0 rgba(59,51,80,.18)}
 #skateExit{width:64px;height:64px;margin:0}
+.follow{display:flex;gap:8px;margin-left:12px}
+.fbtn{height:50px;min-width:64px;padding:0 10px;border-radius:16px;opacity:.55}
+.fbtn svg{width:44px;height:22px}
+.fbtn.on{opacity:1;outline:3px solid #ff6f9a;background:#fff}
+#book header .title{flex-wrap:wrap}
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
 </style>
@@ -187,7 +192,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 <div class="overlay dim" id="book">
   <div class="sheet">
     <header>
-      <div class="title"><span class="ico-fly"></span><span id="bookCount">0</span></div>
+      <div class="title"><span class="ico-fly"></span><span id="bookCount">0</span></div><div class="follow"><button class="btn fbtn" id="followLine" aria-label="Butterflies follow in a line"><svg viewBox="0 0 48 24"><circle cx="6" cy="12" r="4.5" fill="#ff8fb1"/><circle cx="18" cy="12" r="4.5" fill="#b98bff"/><circle cx="30" cy="12" r="4.5" fill="#6bc7ff"/><circle cx="42" cy="12" r="4.5" fill="#ffc83d"/></svg></button><button class="btn fbtn" id="followCircle" aria-label="Butterflies fly in a circle"><svg viewBox="0 0 48 24"><circle cx="24" cy="12" r="3.2" fill="#3b3350"/><circle cx="24" cy="3" r="3.6" fill="#ff8fb1"/><circle cx="33" cy="12" r="3.6" fill="#b98bff"/><circle cx="24" cy="21" r="3.6" fill="#6bc7ff"/><circle cx="15" cy="12" r="3.6" fill="#ffc83d"/></svg></button></div>
       <button class="btn" id="bookClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     </header>
     <div id="grid"></div>
@@ -516,10 +521,10 @@ function buildChunk(i,j){
   return c}
 // ---------- persistence ----------
 const KEY='butterfly-friends-v1';
-let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:'',flakes:0};
+let save={seeds:[],friends:[],sound:true,played:false,char:'sunny',badges:[],landmarks:[],treasures:[],lands:{},exp:'',flakes:0,follow:'line'};
 const owned=new Set();
 const validSeed=n=>Number.isInteger(n)&&n>=0&&n<0x40000000;
-function loadSave(){try{const raw=localStorage.getItem(KEY);let src=KEY;if(raw){try{JSON.parse(raw)}catch(e){src=rescueSave();try{localStorage.setItem(KEY+'-broken-'+Date.now(),raw)}catch(_){}if(!src){saveLoadedOK=true}}}const s=JSON.parse((src&&localStorage.getItem(src))||'null');if(s&&Array.isArray(s.seeds)){save.seeds=s.seeds.filter(validSeed);save.friends=(s.friends||[]).filter(validSeed);save.sound=s.sound!==false;save.played=!!s.played;if(typeof s.char==='string')save.char=s.char;if(Array.isArray(s.badges))save.badges=s.badges.filter(x=>typeof x==='string');const ids=new Set(LANDMARKS.map(l=>l.id));if(Array.isArray(s.landmarks))save.landmarks=s.landmarks.filter(x=>ids.has(x));if(Array.isArray(s.treasures))save.treasures=s.treasures.filter(x=>ids.has(x));if(s.lands&&typeof s.lands==='object')for(const k of LAND_KEYS)if(Number.isFinite(s.lands[k]))save.lands[k]=s.lands[k];if(Number.isFinite(s.flakes))save.flakes=s.flakes;if(typeof s.exp==='string'){save.exp=s.exp;expFromStr(s.exp)}}}catch(e){}
+function loadSave(){try{const raw=localStorage.getItem(KEY);let src=KEY;if(raw){try{JSON.parse(raw)}catch(e){src=rescueSave();try{localStorage.setItem(KEY+'-broken-'+Date.now(),raw)}catch(_){}if(!src){saveLoadedOK=true}}}const s=JSON.parse((src&&localStorage.getItem(src))||'null');if(s&&Array.isArray(s.seeds)){save.seeds=s.seeds.filter(validSeed);save.friends=(s.friends||[]).filter(validSeed);save.sound=s.sound!==false;save.played=!!s.played;if(typeof s.char==='string')save.char=s.char;if(Array.isArray(s.badges))save.badges=s.badges.filter(x=>typeof x==='string');const ids=new Set(LANDMARKS.map(l=>l.id));if(Array.isArray(s.landmarks))save.landmarks=s.landmarks.filter(x=>ids.has(x));if(Array.isArray(s.treasures))save.treasures=s.treasures.filter(x=>ids.has(x));if(s.lands&&typeof s.lands==='object')for(const k of LAND_KEYS)if(Number.isFinite(s.lands[k]))save.lands[k]=s.lands[k];if(Number.isFinite(s.flakes))save.flakes=s.flakes;if(s.follow==='circle'||s.follow==='line')save.follow=s.follow;if(typeof s.exp==='string'){save.exp=s.exp;expFromStr(s.exp)}}}catch(e){}
   save.seeds=[...new Set(save.seeds)];save.seeds.forEach(s=>owned.add(s));save.friends=save.friends.filter(s=>owned.has(s)).slice(-MAX_FRIENDS)}
 // Saves are only ever added to: new fields get defaults, nothing is dropped, and the last good copy is kept as a spare.
 let saveLoadedOK=true;
@@ -670,9 +675,9 @@ function sDoor(){if(!ac)return;const t=ac.currentTime;note(392,t,.25,'triangle',
 function enterRoom(lm){fadeTo(()=>{const def=ROOMS[lm.room],f=def.floor;room={lm,def};outdoorWild=wild.splice(0);
   P.x=RW*.5;P.y=RH*f[3]-8;P.face=1;target=null;roomCool=.8;cam.x=P.x;cam.y=P.y;motes.length=0;
   const rs=RESIDENTS[lm.id];if(!owned.has(rs)){const b=makeB(rs,RW*(.35+Math.random()*.3),RH*(f[2]+.12),'fly',lm.land);b.resident=lm.id;b.calm=1e9;b.speed=24;wild.push(b)}
-  friends.forEach(fr=>{fr.x=P.x;fr.y=P.y});sDoor()})}
+  friends.forEach(fr=>{fr.x=P.x;fr.y=P.y});trail.length=0;sDoor()})}
 function exitRoom(){fadeTo(()=>{const lm=room.lm;room=null;wild.length=0;wild.push(...outdoorWild);outdoorWild=[];
-  P.x=lm.front.x;P.y=lm.front.y+18;target=null;roomCool=1.2;cam.x=P.x;cam.y=P.y;motes.length=0;friends.forEach(fr=>{fr.x=P.x;fr.y=P.y});sDoor()})}
+  P.x=lm.front.x;P.y=lm.front.y+18;target=null;roomCool=1.2;cam.x=P.x;cam.y=P.y;motes.length=0;friends.forEach(fr=>{fr.x=P.x;fr.y=P.y});trail.length=0;sDoor()})}
 function collideRoom(p){const f=room.def.floor,x0=f[0]*RW,x1=f[1]*RW,y0=f[2]*RH,y1=f[3]*RH,inDoor=Math.abs(p.x-RW*.5)<44;
   p.x=clamp(p.x,x0,x1);p.y=clamp(p.y,y0,inDoor?RH+40:y1);if(inDoor&&p.y>y1+20&&roomCool<=0)exitRoom()}
 const treasurePos=()=>({x:room.def.tre[0]*RW,y:room.def.tre[1]*RH});
@@ -733,7 +738,12 @@ function update(dt){
         if(lm.room&&roomCool<=0&&Math.hypot(P.x-lm.dx,P.y-(lm.dy+6))<30){enterRoom(lm);break}}
       expT-=dt;if(expT<0){expT=.5;if(markExplored()){save.exp=expToStr();persistSoon()}}}}
   // friends
-  const n=friends.length;friends.forEach((f,i)=>{const a=time*.75+i*TAU/n,rr=60+(i%2)*18,tx=P.x+Math.cos(a)*rr,ty=P.y-6+Math.sin(a)*rr*.6;
+  // breadcrumb trail so friends can follow in a line
+  {const last=trail[0];if(!last||Math.hypot(P.x-last.x,P.y-last.y)>5){trail.unshift({x:P.x,y:P.y});if(trail.length>260)trail.pop()}}
+  const n=friends.length,lineMode=save.follow!=='circle';friends.forEach((f,i)=>{let tx,ty;
+    if(lineMode){const want=46+i*38;let acc=0,pt=trail[trail.length-1]||P,prev={x:P.x,y:P.y};for(const q of trail){acc+=Math.hypot(q.x-prev.x,q.y-prev.y);prev=q;if(acc>=want){pt=q;break}}
+      tx=pt.x+Math.sin(time*1.7+i*1.3)*6;ty=pt.y-4+Math.cos(time*1.3+i)*4}
+    else{const a=time*.75+i*TAU/n,rr=60+(i%2)*18;tx=P.x+Math.cos(a)*rr;ty=P.y-6+Math.sin(a)*rr*.6}
     const ox=f.x,oy=f.y;f.x=lerp(f.x,tx,Math.min(1,dt*2.6));f.y=lerp(f.y,ty,Math.min(1,dt*2.6));const vx=f.x-ox,vy=f.y-oy;
     if(Math.hypot(vx,vy)>dt*8)f.rot+=angDiff(Math.atan2(vy,vx)+Math.PI/2,f.rot)*Math.min(1,dt*6);f.z=40+Math.sin(time*2+i)*6;f.phase+=dt*12});
   // particles
@@ -748,7 +758,7 @@ function update(dt){
   musicTick();
   if(started&&!room){chirpT-=dt;if(chirpT<0){chirpT=7+Math.random()*9;chirp()}}
 }
-let moteMode='#ffffff',persistT=0;
+let moteMode='#ffffff',persistT=0;const trail=[];
 function persistSoon(){clearTimeout(persistT);persistT=setTimeout(persist,1500)}
 // ---------- render ----------
 const CHARS=[
@@ -963,8 +973,12 @@ function openBook(){sTap();const grid=$('grid');grid.innerHTML='';const n=save.s
   for(const s of sorted){const g=G(s),b=document.createElement('button');b.className='cell';const cv=document.createElement('canvas');cv.className='pix';cv.width=cv.height=Math.round(88*DPR);drawPortrait(cv,s,null,44);
     const st=document.createElement('div');setStars(st,g.rarity);b.append(cv,st);if(save.friends.includes(s)){const h=document.createElement('span');h.className='heart';h.textContent='💗';b.append(h)}
     b.onclick=()=>openDetail(s);grid.append(b)}
-  $('book').classList.add('show')}
+  refreshFollow();$('book').classList.add('show')}
+function refreshFollow(){$('followLine').classList.toggle('on',save.follow!=='circle');$('followCircle').classList.toggle('on',save.follow==='circle')}
+$('followLine').onclick=()=>{initAudio();save.follow='line';persist();refreshFollow();say('Follow me in a line!')};
+$('followCircle').onclick=()=>{initAudio();save.follow='circle';persist();refreshFollow();say('Fly around me in a circle!')};
 $('bookBtn').onclick=openBook;
+
 $('bookClose').onclick=()=>{sTap();$('book').classList.remove('show')};
 function openDetail(seed){sTap();detSeed=seed;const g=G(seed);sizePortrait(detCanvas);setStars($('detStars'),g.rarity);$('detName').textContent=g.name;refreshHeart();$('detail').classList.add('show')}
 function refreshHeart(){const on=save.friends.includes(detSeed);const h=$('heartBtn');h.textContent=on?'💗':'🤍';h.classList.toggle('on',on)}
