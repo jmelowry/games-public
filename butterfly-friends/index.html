@@ -173,6 +173,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .strip .on{background:#ffe3ee}
 .brow{display:flex;gap:14px;align-items:center;justify-content:center;flex:none}
 #snapBtn{width:86px;height:86px;border-radius:50%;background:#ff7aa5;font-size:42px}
+#camBox{position:relative;width:min(340px,80vw);aspect-ratio:3/4;border-radius:20px;overflow:hidden;background:#222}
+#camVid{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+#camOval{position:absolute;left:18%;right:18%;top:12%;bottom:16%;border-radius:50%;box-shadow:0 0 0 999px rgba(255,240,246,.55);outline:4px dashed #ff7aa5;outline-offset:-4px}
 #photoView .card{background:var(--cream);max-width:min(560px,94vw)}
 #photoImg{max-width:100%;max-height:58vh;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.18);display:block;-webkit-touch-callout:default}
 #album{display:flex;gap:8px;overflow-x:auto;max-width:100%}
@@ -262,7 +265,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
   <div class="sheet">
     <header>
       <div class="title">📷</div>
-      <div class="brow"><button class="btn" id="boothClear" aria-label="Take butterflies off"><span class="em">🧹</span></button><button class="btn" id="boothAlbum" aria-label="My photos"><span class="em">🖼️</span></button></div>
+      <div class="brow"><button class="btn" id="boothClear" aria-label="Take butterflies off"><span class="em">🧹</span></button><button class="btn" id="boothAlbum" aria-label="My photos"><span class="em">🖼️</span></button><button class="btn" id="faceBtn" aria-label="Add my face"><span class="em">🤳</span></button></div>
       <button class="btn" id="boothClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     </header>
     <div class="bbody">
@@ -273,6 +276,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
     </div>
   </div>
 </div>
+<div class="overlay dim" id="faceCam" style="z-index:12">
+  <div class="card" style="background:var(--cream);max-width:min(480px,94vw)">
+    <div id="camBox"><video id="camVid" playsinline muted autoplay></video><div id="camOval"></div></div>
+    <div class="brow" style="margin-top:12px"><button class="btn" id="camCancel" aria-label="Cancel"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button><button class="btn" id="camSnap" aria-label="Take my face" style="width:86px;height:86px;border-radius:50%;background:#ff7aa5;font-size:42px">📸</button></div>
+  </div>
+</div>
+<input type="file" id="faceFile" accept="image/*" capture="user" style="display:none">
 <div class="overlay dim" id="photoView" style="z-index:12">
   <div class="card">
     <img id="photoImg" alt="Photo">
@@ -690,7 +700,7 @@ function catchB(b){
 // ---------- update ----------
 const isShown=id=>$(id).classList.contains('show');
 let infoShowing=false,fading=false;
-function modalOpen(){return !started||popSeed!==null||badgeShowing||infoShowing||fading||isShown('start')||isShown('book')||isShown('grown')||isShown('badgeWall')||isShown('mapView')||isShown('booth')||isShown('photoView')}
+function modalOpen(){return !started||popSeed!==null||badgeShowing||infoShowing||fading||isShown('start')||isShown('book')||isShown('grown')||isShown('badgeWall')||isShown('mapView')||isShown('booth')||isShown('photoView')||isShown('faceCam')}
 function collide(p){p.x=clamp(p.x,120,W-120);p.y=clamp(p.y,200,H-70);
   for(let it=0;it<2;it++){const cx=(p.x/CELL)|0,cy=(p.y/CELL)|0;
     for(let i=cx-1;i<=cx+1;i++)for(let j=cy-1;j<=cy+1;j++){if(i<0||j<0||i>=GW||j>=GH)continue;for(const t of tall[i+j*GW]){if(t.kind!=='tree')continue;const dx=p.x-t.x,dy=(p.y-t.y)*1.5,d=Math.hypot(dx,dy),m=24;if(d<m&&d>.01){p.x=t.x+dx/d*m;p.y=t.y+dy/d*m/1.5}}}
@@ -1211,6 +1221,7 @@ function drawBg(c,id,w,h){const k=w/SW;c.save();
 function drawStage(c,t,still){c.setTransform(1,0,0,1,0,0);drawBg(c,booth.bg,SW,SH);
   const ch=booth.ch,ci=charImg(curChar().id);
   if(ci.complete&&ci.naturalWidth){const hh=ch.s*SH*.72,ww=hh*ci.naturalWidth/ci.naturalHeight,b=still?0:Math.sin(t*2)*3;c.drawImage(ci,ch.x-ww/2,ch.y-hh+b,ww,hh);ch.hw=ww/2;ch.hh=hh}
+  const fc=booth.face;if(fc){const h=150*fc.s,w=h*fc.img.width/fc.img.height,b=still?0:Math.sin(t*2.4)*2;c.save();c.shadowColor='rgba(59,51,80,.25)';c.shadowBlur=10;c.shadowOffsetY=4;c.drawImage(fc.img,fc.x-w/2,fc.y-h/2+b,w,h);c.restore()}
   for(const f of booth.flies){const fl=still?1:.55+.45*(.5+.5*Math.cos(t*4+f.ph)),bob=still?0:Math.sin(t*1.6+f.ph)*4;drawFly(c,sprite(f.seed,96),f.x,f.y+bob,f.rot,fl,46*f.s)}}
 function boothLoop(){if(!isShown('booth')){booth.raf=0;return}drawStage(stx,performance.now()/1000,false);booth.raf=requestAnimationFrame(boothLoop)}
 function sizeStage(){const sw=$('stageWrap'),w=Math.max(160,Math.min(sw.clientWidth,sw.clientHeight*4/3));stage.style.width=w+'px';stage.style.height=w*.75+'px'}
@@ -1229,21 +1240,23 @@ function openBooth(){sTap();initAudio();if(!booth.ch)booth.ch={x:SW*.34,y:SH*.97
   if(!BOOTH_BGS.some(b=>b.id===booth.bg&&bgAvail(b)))booth.bg='booth';
   $('booth').classList.add('show');stage.style.width=stage.style.height='10px';requestAnimationFrame(sizeStage);try{document.fonts.load('700 44px Andika');document.fonts.load('400 26px Andika')}catch(e){}buildBgStrip();buildFlyStrip();if(!booth.raf)boothLoop()}
 $('boothBtn').onclick=openBooth;
-$('boothClose').onclick=()=>{sTap();$('booth').classList.remove('show')};
+$('boothClose').onclick=()=>{sTap();stopCam();$('booth').classList.remove('show')};
 $('boothClear').onclick=()=>{sTap();booth.flies.length=0;buildFlyStrip()};
 try{new ResizeObserver(()=>{if(isShown('booth'))sizeStage()}).observe($('stageWrap'))}catch(e){addEventListener('resize',()=>{if(isShown('booth'))sizeStage()})}
 // drag / tap-to-resize on the stage
 function stagePt(e){const r=stage.getBoundingClientRect();return{x:(e.clientX-r.left)*SW/r.width,y:(e.clientY-r.top)*SH/r.height,out:e.clientX<r.left-10||e.clientX>r.right+10||e.clientY<r.top-10||e.clientY>r.bottom+10}}
-function hitStage(p){for(let i=booth.flies.length-1;i>=0;i--){const f=booth.flies[i];if(Math.hypot(p.x-f.x,p.y-f.y)<62*f.s)return f}
+function hitStage(p){const fc=booth.face;if(fc){const h=75*fc.s,w=h*fc.img.width/fc.img.height;if(((p.x-fc.x)/w)**2+((p.y-fc.y)/h)**2<1.1)return fc}
+  for(let i=booth.flies.length-1;i>=0;i--){const f=booth.flies[i];if(Math.hypot(p.x-f.x,p.y-f.y)<62*f.s)return f}
   const c=booth.ch;if(c.hw&&Math.abs(p.x-c.x)<c.hw*.8&&p.y<c.y&&p.y>c.y-c.hh)return c;return null}
 stage.addEventListener('pointerdown',e=>{if(booth.busy)return;const p=stagePt(e),it=hitStage(p);if(!it)return;stage.setPointerCapture(e.pointerId);
   booth.drag={it,dx:it.x-p.x,dy:it.y-p.y,sx:p.x,sy:p.y,moved:false};
-  if(it!==booth.ch){booth.flies.splice(booth.flies.indexOf(it),1);booth.flies.push(it)}});
+  if(booth.flies.includes(it)){booth.flies.splice(booth.flies.indexOf(it),1);booth.flies.push(it)}});
 stage.addEventListener('pointermove',e=>{const d=booth.drag;if(!d)return;const p=stagePt(e);if(Math.hypot(p.x-d.sx,p.y-d.sy)>8)d.moved=true;
   d.it.x=clamp(p.x+d.dx,-60,SW+60);d.it.y=clamp(p.y+d.dy,-60,SH+(d.it===booth.ch?SH*.4:60))});
 function stageUp(e){const d=booth.drag;if(!d)return;booth.drag=null;const p=stagePt(e);
-  if(!d.moved){const S2=[1,1.5,2,.7],i=S2.indexOf(d.it.s);d.it.s=S2[(i+1)%S2.length];sTap();if(d.it!==booth.ch)chirp()}
-  else if(d.it!==booth.ch&&p.out){booth.flies.splice(booth.flies.indexOf(d.it),1);buildFlyStrip()}}
+  if(!d.moved){const S2=[1,1.5,2,.7],i=S2.indexOf(d.it.s);d.it.s=S2[(i+1)%S2.length];sTap();if(booth.flies.includes(d.it))chirp()}
+  else if(p.out&&d.it===booth.face){booth.face=null;sTap()}
+  else if(p.out&&booth.flies.includes(d.it)){booth.flies.splice(booth.flies.indexOf(d.it),1);buildFlyStrip()}}
 stage.addEventListener('pointerup',stageUp);stage.addEventListener('pointercancel',stageUp);
 // snap!
 function photoFrame(){const B=40,BB=148,out=mk(SW+B*2,SH+B+BB),c=out.getContext('2d');c.fillStyle='#fffdf8';c.fillRect(0,0,out.width,out.height);
@@ -1259,6 +1272,35 @@ $('snapBtn').onclick=()=>{if(booth.busy)return;booth.busy=true;initAudio();const
       if(ac){const t=ac.currentTime;note(1800,t,.05,'square',.05);note(900,t+.05,.08,'square',.05)}
       const url=photoFrame().toDataURL('image/jpeg',.82);booth.busy=false;addPhoto(url);showPhoto(url)}};
   setTimeout(tick,500)};
+
+// ---------- my face (camera stays on this device; the face is only kept while the booth is open) ----------
+let camStream=null;
+function faceFrom(src,sw,sh,mirror){// crop the oval guide area and soften its edge
+  const cw=sw,ch=sh,ar=3/4;let w=cw,h=cw/ar;if(h>ch){h=ch;w=ch*ar}const ox=(cw-w)/2,oy=(ch-h)/2;
+  const fx=ox+w*.18,fy=oy+h*.12,fw=w*.64,fh=h*.72,OW=240,OH=Math.round(OW*fh/fw);
+  const out=mk(OW,OH),c=out.getContext('2d');c.save();if(mirror){c.translate(OW,0);c.scale(-1,1)}c.drawImage(src,fx,fy,fw,fh,0,0,OW,OH);c.restore();
+  const m=mk(OW,OH),mc=m.getContext('2d'),g=mc.createRadialGradient(OW/2,OH/2,Math.min(OW,OH)*.42,OW/2,OH/2,Math.min(OW,OH)*.5);
+  mc.save();mc.translate(OW/2,OH/2);mc.scale(1,OH/OW);mc.translate(-OW/2,-OW/2);const g2=mc.createRadialGradient(OW/2,OW/2,OW*.44,OW/2,OW/2,OW*.5);g2.addColorStop(0,'#000');g2.addColorStop(1,'rgba(0,0,0,0)');mc.fillStyle=g2;mc.fillRect(0,0,OW,OW);mc.restore();
+  c.globalCompositeOperation='destination-in';c.drawImage(m,0,0);c.globalCompositeOperation='source-over';
+  const ring=mk(OW+16,OH+16),rc=ring.getContext('2d');rc.fillStyle='#ffd1e1';rc.beginPath();rc.ellipse((OW+16)/2,(OH+16)/2,(OW+16)/2,(OH+16)/2,0,0,TAU);rc.fill();rc.drawImage(out,8,8);
+  return ring}
+function placeFace(img){booth.face={img,x:SW*.7,y:SH*.42,s:1.5};chirp();voice('pb_face','There you are!',false)}
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}$('camVid').srcObject=null;$('faceCam').classList.remove('show')}
+$('faceBtn').onclick=async()=>{sTap();initAudio();
+  try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw 0;
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    const v=$('camVid');v.srcObject=camStream;$('faceCam').classList.add('show');await v.play().catch(()=>{});voice('pb_cam','Put your face in the circle!',false)}
+  catch(e){stopCam();$('faceFile').click()}};
+$('camCancel').onclick=()=>{sTap();stopCam()};
+$('camSnap').onclick=()=>{const v=$('camVid');if(!v.videoWidth)return;const box=$('camBox').getBoundingClientRect();
+  // map the visible (object-fit: cover) box onto the video frame
+  const vr=v.videoWidth/v.videoHeight,br=box.width/box.height;let sw=v.videoWidth,sh=v.videoHeight,sx=0,sy=0;
+  if(vr>br){sw=sh*br;sx=(v.videoWidth-sw)/2}else{sh=sw/br;sy=(v.videoHeight-sh)/2}
+  const fr=mk(sw,sh);fr.getContext('2d').drawImage(v,sx,sy,sw,sh,0,0,sw,sh);
+  if(ac){const t=ac.currentTime;note(1800,t,.05,'square',.05)}
+  placeFace(faceFrom(fr,sw,sh,true));stopCam()};
+$('faceFile').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const url=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{const k=Math.min(1,1200/Math.max(im.width,im.height)),fr=mk(im.width*k,im.height*k);fr.getContext('2d').drawImage(im,0,0,fr.width,fr.height);URL.revokeObjectURL(url);placeFace(faceFrom(fr,fr.width,fr.height,false))};im.src=url};
 // album: last 12 photos kept in IndexedDB (separate from the butterfly save, so it can never crowd it out)
 const ALBUM_MAX=12;let albumDB=null;
 function adb(){if(albumDB)return albumDB;return albumDB=new Promise((res,rej)=>{const r=indexedDB.open('butterfly-friends-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'t'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
