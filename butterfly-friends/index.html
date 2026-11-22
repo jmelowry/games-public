@@ -84,6 +84,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .row .tbtn{flex:1}
 .small{font-size:13px;opacity:.7}
 #start{justify-content:center}
+#wardrobe{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:min(560px,94vw)}
+#wardrobe:empty{display:none}
+.wtile{width:62px;height:62px;border:0;border-radius:18px;background:rgba(255,255,255,.92);box-shadow:0 4px 0 rgba(59,51,80,.2);display:flex;align-items:center;justify-content:center;padding:6px;font:inherit;font-size:26px;font-weight:700;color:#c9c1b0}
+.wtile img{max-width:100%;max-height:100%}
+.wtile.on{outline:4px solid #ff6f9a;background:#ffe3ee}
+.wtile.no{background:rgba(239,233,220,.85)}
 #chars{display:grid;grid-template-columns:repeat(3,auto);gap:12px;justify-content:center}
 .ccard{border:0;background:rgba(255,255,255,.92);border-radius:24px;padding:8px 8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(59,51,80,.2);font:inherit;font-weight:700;font-size:16px;color:var(--ink);touch-action:manipulation;cursor:pointer;outline:4px solid transparent;transition:transform .15s,outline-color .15s}
 .ccard canvas{width:68px;height:112px;display:block}
@@ -204,6 +210,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 <div class="overlay show" id="start">
   <h1><span>Butterfly</span><span>Friends</span></h1>
   <div id="chars"></div>
+  <div id="wardrobe"></div>
   <button class="btn play" id="playBtn" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M6 3.5v17l14-8.5z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></button>
   <div class="have" id="startHave"></div>
 </div>
@@ -554,7 +561,7 @@ for(const lm of LANDMARKS)if(lm.kind!=='water'&&lm.kind!=='flat')tall[cellOf(lm.
 const ART={};const ART_PATHS={grass:'map/grass',tree:'map/tree',tree_blossom:'map/tree_blossom',tree_apple:'map/tree_apple',tree_dark:'map/tree_dark',bush:'map/bush',flowers1:'map/flowers1',flowers2:'map/flowers2',flowers3:'map/flowers3',flowers4:'map/flowers4',path:'map/path',rock:'map/rock',mushroom:'map/mushroom',pond:'map/pond'};
 ['g_snow','g_sand','g_moss','g_hills','snow_pine','palm','woods_tree','wisteria','ice_rocks','cactus','glow_mush','topiary','worldmap',...LANDMARKS.map(l=>l.img),...LANDMARKS.filter(l=>l.room).map(l=>l.room),...LANDMARKS.filter(l=>l.treasure).map(l=>l.treasure)].forEach(k=>ART_PATHS[k]='world/'+k);
 const GROUND_KEYS=new Set(['grass','g_snow','g_sand','g_moss','g_hills','path']);
-function loadArt(k){const im=new Image();im.onload=()=>{ART[k]=im;if(GROUND_KEYS.has(k))chunkCache.clear()};im.src=ART_PATHS[k]+'.webp'}
+function loadArt(k){const im=new Image();im.onload=()=>{ART[k]=im;if(k.startsWith('t_')&&isShown('start')){buildWardrobe();refreshCardImgs()}if(GROUND_KEYS.has(k))chunkCache.clear()};im.src=ART_PATHS[k]+'.webp'}
 const chunkCache=new Map();
 // load what the starting meadow needs first, then the rest
 ['grass','path','tree','tree_blossom','tree_apple','tree_dark','bush','flowers1','flowers2','flowers3','flowers4','rock','mushroom','pond','windmill','wishing_tree'].forEach(loadArt);
@@ -896,14 +903,37 @@ const CROP_FULL={x0:-25,y0:-76,w:50,h:82},CROP_HEAD={x0:-22,y0:-68,w:44,h:44};
 const curChar=()=>CHARS.find(c=>c.id===save.char)||CHARS[0];
 // ---------- illustrated character sprites (pixelated in-world) ----------
 const CHAR_H=82; // world units tall
+
+// ---------- dress-up: wear treasures ----------
+const WEAR_SLOT={t_crown:'head',t_sungem:'neck',t_wand:'hand',t_teacup:'hand',t_musicbox:'hand',t_honey:'hand'};
+// per character, as fractions of the portrait: head = [x, crown bottom y, crown width], neck = [x, y], hand = [x, y] (the free hand)
+const DRESS_AT={sunny:{head:[.6,.085,.46],neck:[.6,.42],hand:[.92,.62]},luna:{head:[.47,.07,.46],neck:[.47,.4],hand:[.86,.44]},
+  kiko:{head:[.58,.105,.46],neck:[.58,.39],hand:[.9,.42]},hana:{head:[.62,.09,.46],neck:[.6,.4],hand:[.91,.42]},
+  ren:{head:[.38,.075,.46],neck:[.4,.375],hand:[.3,.55]},bo:{head:[.35,.21,.4],neck:[.35,.49],hand:[.07,.72]}};
+const wear=()=>save.wear||(save.wear={});
+const ownedTreasures=()=>LANDMARKS.filter(l=>l.treasure&&save.treasures.includes(l.id)).map(l=>l.treasure);
+function wornList(){const w=wear(),own=ownedTreasures();return['neck','head','hand'].map(k=>w[k]).filter(k=>k&&own.includes(k)&&ART[k])}
+const dressCache={};
+// returns {src,W,H,px,pt}: src is the portrait with worn treasures (padded px left/right and pt on top so items can stick out)
+function dressed(id){const im=charImg(id);if(!im.complete||!im.naturalWidth)return null;const W=im.naturalWidth,H=im.naturalHeight,ks=wornList();
+  if(!ks.length)return{src:im,W,H,px:0,pt:0,key:''};const key=ks.join(',');const d0=dressCache[id];if(d0&&d0.key===key)return d0;
+  const px=Math.round(W*.28),pt=Math.round(H*.1),c=mk(W+px*2,H+pt),x=c.getContext('2d'),A=DRESS_AT[id]||DRESS_AT.sunny;
+  x.drawImage(im,px,pt);
+  for(const k of ks){const im2=ART[k],slot=WEAR_SLOT[k];
+    if(slot==='head'){const[hx,hy,hw]=A.head,w=W*hw,h=w*im2.naturalHeight/im2.naturalWidth;x.drawImage(im2,px+hx*W-w/2,pt+hy*H-h*.78,w,h)}
+    else if(slot==='neck'){const[nx,ny]=A.neck,sy=im2.naturalHeight*.46,sh=im2.naturalHeight-sy,w=W*.2,h=w*sh/im2.naturalWidth,cx=px+nx*W,cy=pt+ny*H;
+      x.strokeStyle='#d9a521';x.lineWidth=W*.012;x.lineCap='round';x.beginPath();x.moveTo(cx-W*.085,cy-H*.012);x.quadraticCurveTo(cx-W*.04,cy+H*.035,cx,cy+H*.045);x.quadraticCurveTo(cx+W*.04,cy+H*.035,cx+W*.085,cy-H*.012);x.stroke();
+      x.drawImage(im2,0,sy,im2.naturalWidth,sh,cx-w/2,cy+H*.03,w,h)}
+    else{const[hx,hy]=A.hand,w=W*.3,h=w*im2.naturalHeight/im2.naturalWidth;x.drawImage(im2,px+hx*W-w/2,pt+hy*H-h*.8,w,h)}}
+  return dressCache[id]={src:c,W,H,px,pt,key}}
 const charImgs={},charSpr={};
 function charImg(id){let im=charImgs[id];if(!im){im=new Image();im.src='chars/'+id+'.webp';charImgs[id]=im}return im}
-function charSprite(id){const im=charImg(id);if(!im.complete||!im.naturalWidth)return null;const key=id+':'+S.toFixed(3);if(charSpr[id]&&charSpr[id].key===key)return charSpr[id];
+function charSprite(id){const d=dressed(id);if(!d)return null;const key=id+':'+S.toFixed(3)+':'+d.key;if(charSpr[id]&&charSpr[id].key===key)return charSpr[id];const im=d.src,k0=(im.naturalHeight||im.height)/d.H;
   // high quality stepped downscale to ~2x the on-screen lo-res size, then the lo canvas pixelates it
-  const th=Math.max(8,Math.round(CHAR_H*S*2)),tw=Math.round(th*im.naturalWidth/im.naturalHeight);let src=im,w=im.naturalWidth,h=im.naturalHeight;
+  const iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,th=Math.max(8,Math.round(CHAR_H*S*2*k0)),tw=Math.round(th*iw/ih);let src=im,w=iw,h=ih;
   while(h/2>th){const c=mk(Math.round(w/2),Math.round(h/2)),x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);src=c;w=c.width;h=c.height}
   const c=mk(tw,th),x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,tw,th);
-  charSpr[id]={key,c,w:CHAR_H*tw/th,h:CHAR_H};return charSpr[id]}
+  charSpr[id]={key,c,w:CHAR_H*k0*tw/th,h:CHAR_H*k0};return charSpr[id]}
 function drawCharImg(x,p,c){const sp=charSprite(c.id);if(!sp){drawChar(x,p,c);return}
   const t=time,mv=p.moving,hop=p.swing>0?Math.sin((1-p.swing/.35)*Math.PI)*10:0;
   const bob=mv?Math.abs(Math.sin(p.walk))*3.2:0,breathe=mv?0:Math.sin(t*2.2)*.018;
@@ -1087,7 +1117,19 @@ function buildChars(){const box=$('chars');box.innerHTML='';charCards.length=0;
     const o0={b,cv:null,c};img.onerror=()=>{cv=document.createElement('canvas');cv.className='pix';cv.width=Math.round(50*2.2*DPR);cv.height=Math.round(82*2.2*DPR);img.replaceWith(cv);o0.cv=cv};
     const nm=document.createElement('div');nm.textContent=c.name;b.append(img,nm);
     b.onclick=()=>{initAudio();voice('hi_'+c.id,c.name,true);save.char=c.id;persist();charCards.forEach(o=>o.b.classList.toggle('sel',o.c===c));if(ac){const t=ac.currentTime;note(880,t,.15,'triangle',.07);note(1318.5,t+.08,.25,'triangle',.06)}renderHudChar()};
-    box.append(b);charCards.push(o0)}}
+    box.append(b);charCards.push(o0)}buildWardrobe();refreshCardImgs()}
+function buildWardrobe(){const box=$('wardrobe');box.innerHTML='';const own=ownedTreasures();if(!own.length)return;const w=wear();
+  for(const l of LANDMARKS.filter(l=>l.treasure)){const k=l.treasure,got=own.includes(k),b=document.createElement('button');b.className='wtile'+(got?(w[WEAR_SLOT[k]]===k?' on':''):' no');
+    b.setAttribute('aria-label',got?l.tname:'Not found yet');
+    if(got&&ART[k]){const i=ART[k].cloneNode();i.alt='';b.append(i)}else b.textContent='?';
+    if(got)b.onclick=()=>{initAudio();const sl=WEAR_SLOT[k];if(w[sl]===k){delete w[sl];sTap()}else{w[sl]=k;voice('tr_'+k.slice(2),l.tname,true);if(ac){const t=ac.currentTime;note(1046.5,t,.2,'triangle',.07);note(1568,t+.08,.3,'triangle',.06)}}persist();buildWardrobe();refreshCardImgs()};
+    box.append(b)}}
+// character cards show each friend wearing the chosen treasures
+function refreshCardImgs(){charCards.forEach(o=>{const im=o.b.querySelector('img');if(!im)return;const d=dressed(o.c.id);if(!d||!d.key){im.src='chars/'+o.c.id+'.webp';im.style.margin='';return}
+  const c=mk(d.src.width/2,d.src.height/2),x=c.getContext('2d');x.drawImage(d.src,0,0,c.width,c.height);
+  // crop to what's drawn so the friend stays big on the card
+  const a=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,x1=0,y0=c.height;for(let y=0;y<c.height;y+=2)for(let xx=0;xx<c.width;xx+=2)if(a[(y*c.width+xx)*4+3]>20){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(y<y0)y0=y}
+  const oc=mk(x1-x0+2,c.height-y0);oc.getContext('2d').drawImage(c,-x0,-y0);im.src=oc.toDataURL('image/webp',.85)})}
 function drawCharCards(){charCards.forEach((o,i)=>{if(o.cv)renderChar(o.cv,o.c,CROP_FULL,.9,o.c.id===save.char,i*1.3)})}
 function renderHudChar(){$('charBtn').querySelector('.face').style.backgroundImage=`url(chars/${curChar().id}.webp)`;charImg(curChar().id)}
 $('charBtn').onclick=()=>{sTap();buildChars();$('start').classList.add('show')};
@@ -1219,10 +1261,10 @@ function drawBg(c,id,w,h){const k=w/SW;c.save();
     else{const tr=ART[(L.trees[0]||['tree'])[0]];if(tr){const th=h*.5,tw=th*tr.naturalWidth/tr.naturalHeight;c.drawImage(tr,w*.8-tw/2,hz+h*.1-th,tw,th);c.drawImage(tr,w*.08-tw/2,hz+h*.05-th*.8,tw*.8,th*.8)}}}
   c.restore()}
 function drawStage(c,t,still){c.setTransform(1,0,0,1,0,0);drawBg(c,booth.bg,SW,SH);
-  const ch=booth.ch,ci=charImg(curChar().id);
-  if(ci.complete&&ci.naturalWidth){const hh=ch.s*SH*.72,ww=hh*ci.naturalWidth/ci.naturalHeight,b=still?0:Math.sin(t*2)*3;c.drawImage(ci,ch.x-ww/2,ch.y-hh+b,ww,hh);ch.hw=ww/2;ch.hh=hh}
+  const ch=booth.ch,d=dressed(curChar().id);
+  if(d){const hh=ch.s*SH*.72,k=hh/d.H,b=still?0:Math.sin(t*2)*3,sw=(d.W+d.px*2)*k,sh=(d.H+d.pt)*k;c.drawImage(d.src,ch.x-sw/2,ch.y-sh+b,sw,sh);ch.hw=d.W*k/2;ch.hh=hh}
   const fc=booth.face;if(fc){const h=150*fc.s,w=h*fc.img.width/fc.img.height,b=still?0:Math.sin(t*2.4)*2;c.save();c.shadowColor='rgba(59,51,80,.25)';c.shadowBlur=10;c.shadowOffsetY=4;c.drawImage(fc.img,fc.x-w/2,fc.y-h/2+b,w,h);c.restore()}
-  for(const f of booth.flies){const fl=still?1:.55+.45*(.5+.5*Math.cos(t*4+f.ph)),bob=still?0:Math.sin(t*1.6+f.ph)*4;drawFly(c,sprite(f.seed,96),f.x,f.y+bob,f.rot,fl,46*f.s)}}
+  for(const f of booth.flies){const fl=still?1:.55+.45*(.5+.5*Math.cos(t*4+f.ph)),bob=still?0:Math.sin(t*1.6+f.ph)*4;if(f.art){const im=ART[f.art];if(im){const h=120*f.s,w=h*im.naturalWidth/im.naturalHeight;c.save();c.translate(f.x,f.y+bob*.5);c.rotate(f.rot*.5);c.drawImage(im,-w/2,-h/2,w,h);c.restore()}}else drawFly(c,sprite(f.seed,96),f.x,f.y+bob,f.rot,fl,46*f.s)}}
 function boothLoop(){if(!isShown('booth')){booth.raf=0;return}drawStage(stx,performance.now()/1000,false);booth.raf=requestAnimationFrame(boothLoop)}
 function sizeStage(){const sw=$('stageWrap'),w=Math.max(160,Math.min(sw.clientWidth,sw.clientHeight*4/3));stage.style.width=w+'px';stage.style.height=w*.75+'px'}
 function thumb(w,h,draw,cls,label,onclick){const b=document.createElement('button');b.className=cls||'';b.setAttribute('aria-label',label||'');const cv=mk(w*DPR,h*DPR);cv.style.width=w+'px';cv.style.height=h+'px';draw(cv.getContext('2d'),cv.width,cv.height);b.append(cv);b.onclick=onclick;return b}
@@ -1230,10 +1272,14 @@ function buildBgStrip(){const st=$('bgStrip');st.innerHTML='';
   for(const b of BOOTH_BGS){if(!bgAvail(b))continue;const el=thumb(84,63,(c,w,h)=>drawBg(c,b.id,w,h),b.id===booth.bg?'sel':'',b.lm?b.lm.name:'',()=>{sTap();booth.bg=b.id;buildBgStrip();if(b.lm)voice('lm_'+b.lm.id,b.lm.name,true)});st.append(el)}}
 function buildFlyStrip(){const st=$('flyStrip');st.innerHTML='';const seen=new Set(),list=[];
   for(const s of [...save.friends].reverse().concat([...save.seeds].reverse())){if(!seen.has(s)){seen.add(s);list.push(s)}if(list.length>=80)break}
-  if(!list.length){const d=document.createElement('div');d.style.cssText='padding:10px 16px;font-size:28px';d.textContent='🦋 ?';st.append(d);return}
+  for(const l of LANDMARKS.filter(l=>l.treasure&&save.treasures.includes(l.id))){const k=l.treasure;if(!ART[k])continue;const on=booth.flies.some(f=>f.art===k);
+    st.append(thumb(60,60,(c,w,h)=>{const im=ART[k],s2=Math.min(w/im.naturalWidth,h/im.naturalHeight)*.9;c.drawImage(im,(w-im.naturalWidth*s2)/2,(h-im.naturalHeight*s2)/2,im.naturalWidth*s2,im.naturalHeight*s2)},on?'on':'',l.tname,()=>{
+      const i=booth.flies.findIndex(f=>f.art===k);if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=14)booth.flies.shift();booth.flies.push({art:k,x:150+Math.random()*500,y:120+Math.random()*300,s:1,rot:(Math.random()-.5)*.4,ph:Math.random()*6});chirp()}
+      sTap();buildFlyStrip()}))}
+  if(!list.length&&!st.children.length){const d=document.createElement('div');d.style.cssText='padding:10px 16px;font-size:28px';d.textContent='🦋 ?';st.append(d);return}
   for(const seed of list){const on=booth.flies.some(f=>f.seed===seed);st.append(thumb(60,60,(c,w,h)=>drawFly(c,sprite(seed,64),w/2,h/2,0,1,w/2.6),on?'on':'',G(seed).name,()=>{
     const i=booth.flies.findIndex(f=>f.seed===seed);
-    if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=12)booth.flies.shift();booth.flies.push({seed,x:120+Math.random()*560,y:90+Math.random()*300,s:1,rot:(Math.random()-.5)*.5,ph:Math.random()*6});chirp();if(save.sound)sayName(seed,false)}
+    if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=14)booth.flies.shift();booth.flies.push({seed,x:120+Math.random()*560,y:90+Math.random()*300,s:1,rot:(Math.random()-.5)*.5,ph:Math.random()*6});chirp();if(save.sound)sayName(seed,false)}
     sTap();buildFlyStrip()}))}}
 function openBooth(){sTap();initAudio();if(!booth.ch)booth.ch={x:SW*.34,y:SH*.97,s:1};
   if(!booth.flies.length)booth.flies=save.friends.slice(-3).map((seed,i)=>({seed,x:470+i*110,y:150+(i%2)*120,s:1,rot:(i-1)*.2,ph:i*2}));
@@ -1263,7 +1309,7 @@ function photoFrame(){const B=40,BB=148,out=mk(SW+B*2,SH+B+BB),c=out.getContext(
   const ph=mk(SW,SH);drawStage(ph.getContext('2d'),0,true);c.drawImage(ph,B,B);c.strokeStyle='rgba(0,0,0,.08)';c.lineWidth=2;c.strokeRect(B,B,SW,SH);
   const y=SH+B+BB/2+6;c.textAlign='center';c.textBaseline='middle';c.fillStyle='#3b3350';c.font='700 44px Andika, Fredoka, sans-serif';c.fillText('Butterfly Friends',out.width/2,y-14);
   c.font='400 26px Andika, Fredoka, sans-serif';c.fillStyle='#8a8198';const d=new Date();c.fillText(d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}),out.width/2,y+30);
-  [[B+50,y],[out.width-B-50,y]].forEach(([x,yy],i)=>{const sd=booth.flies[i]??booth.flies[0];if(sd!=null)drawFly(c,sprite(sd.seed,64),x,yy,i?.2:-.2,1,26)});
+  [[B+50,y],[out.width-B-50,y]].forEach(([x,yy],i)=>{const fs=booth.flies.filter(f=>f.seed!=null),sd=fs[i]??fs[0];if(sd!=null)drawFly(c,sprite(sd.seed,64),x,yy,i?.2:-.2,1,26)});
   return out}
 $('snapBtn').onclick=()=>{if(booth.busy)return;booth.busy=true;initAudio();const cd=$('countdown');let n=3;voice('pb_cheese','Say cheese!');
   const tick=()=>{if(!isShown('booth')){cd.textContent='';booth.busy=false;return}
