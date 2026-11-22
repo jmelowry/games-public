@@ -1233,12 +1233,12 @@ function buildFlyStrip(){const st=$('flyStrip');st.innerHTML='';const seen=new S
   if(!list.length){const d=document.createElement('div');d.style.cssText='padding:10px 16px;font-size:28px';d.textContent='🦋 ?';st.append(d);return}
   for(const seed of list){const on=booth.flies.some(f=>f.seed===seed);st.append(thumb(60,60,(c,w,h)=>drawFly(c,sprite(seed,64),w/2,h/2,0,1,w/2.6),on?'on':'',G(seed).name,()=>{
     const i=booth.flies.findIndex(f=>f.seed===seed);
-    if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=12)booth.flies.shift();booth.flies.push({seed,x:120+Math.random()*560,y:90+Math.random()*300,s:1,rot:(Math.random()-.5)*.5,ph:Math.random()*6});chirp()}
+    if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=12)booth.flies.shift();booth.flies.push({seed,x:120+Math.random()*560,y:90+Math.random()*300,s:1,rot:(Math.random()-.5)*.5,ph:Math.random()*6});chirp();if(save.sound)sayName(seed,false)}
     sTap();buildFlyStrip()}))}}
 function openBooth(){sTap();initAudio();if(!booth.ch)booth.ch={x:SW*.34,y:SH*.97,s:1};
   if(!booth.flies.length)booth.flies=save.friends.slice(-3).map((seed,i)=>({seed,x:470+i*110,y:150+(i%2)*120,s:1,rot:(i-1)*.2,ph:i*2}));
   if(!BOOTH_BGS.some(b=>b.id===booth.bg&&bgAvail(b)))booth.bg='booth';
-  $('booth').classList.add('show');stage.style.width=stage.style.height='10px';requestAnimationFrame(sizeStage);try{document.fonts.load('700 44px Andika');document.fonts.load('400 26px Andika')}catch(e){}buildBgStrip();buildFlyStrip();if(!booth.raf)boothLoop()}
+  $('booth').classList.add('show');stage.style.width=stage.style.height='10px';requestAnimationFrame(sizeStage);try{document.fonts.load('700 44px Andika');document.fonts.load('400 26px Andika')}catch(e){}buildBgStrip();buildFlyStrip();if(!booth.raf)boothLoop();if(!booth.greeted){booth.greeted=true;voice('pb_hello','Welcome to the photo booth!')}}
 $('boothBtn').onclick=openBooth;
 $('boothClose').onclick=()=>{sTap();stopCam();$('booth').classList.remove('show')};
 $('boothClear').onclick=()=>{sTap();booth.flies.length=0;buildFlyStrip()};
@@ -1265,13 +1265,13 @@ function photoFrame(){const B=40,BB=148,out=mk(SW+B*2,SH+B+BB),c=out.getContext(
   c.font='400 26px Andika, Fredoka, sans-serif';c.fillStyle='#8a8198';const d=new Date();c.fillText(d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}),out.width/2,y+30);
   [[B+50,y],[out.width-B-50,y]].forEach(([x,yy],i)=>{const sd=booth.flies[i]??booth.flies[0];if(sd!=null)drawFly(c,sprite(sd.seed,64),x,yy,i?.2:-.2,1,26)});
   return out}
-$('snapBtn').onclick=()=>{if(booth.busy)return;booth.busy=true;initAudio();const cd=$('countdown');let n=3;try{say('Say cheese!')}catch(e){}
+$('snapBtn').onclick=()=>{if(booth.busy)return;booth.busy=true;initAudio();const cd=$('countdown');let n=3;voice('pb_cheese','Say cheese!');
   const tick=()=>{if(!isShown('booth')){cd.textContent='';booth.busy=false;return}
     if(n>0){cd.textContent=n;if(ac)note(660,ac.currentTime,.15,'triangle',.08);n--;setTimeout(tick,800)}
     else{cd.textContent='';const fl=$('flash');fl.style.transition='none';fl.style.opacity=1;requestAnimationFrame(()=>{fl.style.transition='opacity .6s';fl.style.opacity=0});
       if(ac){const t=ac.currentTime;note(1800,t,.05,'square',.05);note(900,t+.05,.08,'square',.05)}
-      const url=photoFrame().toDataURL('image/jpeg',.82);booth.busy=false;addPhoto(url);showPhoto(url)}};
-  setTimeout(tick,500)};
+      const url=photoFrame().toDataURL('image/jpeg',.82);booth.busy=false;addPhoto(url);showPhoto(url);setTimeout(()=>voice('pb_wow','What a beautiful picture!'),500)}};
+  setTimeout(tick,1500)};
 
 // ---------- my face (camera stays on this device; the face is only kept while the booth is open) ----------
 let camStream=null;
@@ -1316,7 +1316,7 @@ $('photoSave').onclick=async()=>{sTap();const url=$('photoImg').src;try{const bl
 // ---------- voice clips (ElevenLabs, one narrator voice) ----------
 const VOICE_ALL=['hi_sunny','hi_luna','hi_kiko','hi_hana','hi_ren','hi_bo','catch1','catch2','rare','spotted','found','door','skate',
   'lm_windmill','lm_wishtree','lm_icepalace','lm_frozenlake','lm_suntemple','lm_oasis','lm_wizard','lm_mushroom','lm_castle','lm_rainbow',
-  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox'];
+  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox','pb_hello','pb_cam','pb_face','pb_cheese','pb_wow','st1','st2','st3','st4'];
 const voiceBuf={};let voiceSrc=null,voiceGain=null,chatterAt=-99,ipClip=null,voicePreloaded=false;
 function vBuf(n){if(voiceBuf[n])return voiceBuf[n];return voiceBuf[n]=fetch(`voice/${n}.mp3`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej))).catch(e=>{delete voiceBuf[n];throw e})}
 function preloadVoice(){if(voicePreloaded||!ac)return;voicePreloaded=true;let i=0;const next=()=>{if(i<VOICE_ALL.length)vBuf(VOICE_ALL[i++]).catch(()=>{}).finally(next)};next();next()}
@@ -1327,6 +1327,18 @@ async function voice(n,fallback,explicit){if(!explicit&&!save.sound)return;initA
     if(!voiceGain){voiceGain=ac.createGain();voiceGain.gain.value=1;voiceGain.connect(ac.destination)}
     const src=ac.createBufferSource();src.buffer=buf;src.connect(voiceGain);src.onended=()=>{if(voiceSrc===src)voiceSrc=null};voiceSrc=src;src.start();chatterAt=time}
   catch(e){if(fallback)say(fallback)}}
+
+// butterfly names: three recorded words joined with a tiny overlap, then the star line
+const STAR_CLIPS=['st1','st2','st3','st4'];
+async function sayName(seed,withStars){const g=G(seed);initAudio();
+  try{if(!ac)throw 0;const words=g.name.split(' ').map(w=>'w/'+w.toLowerCase());
+    const bufs=await Promise.all([...words,...(withStars?[STAR_CLIPS[g.rarity]]:[])].map(vBuf));
+    try{speechSynthesis.cancel()}catch(e){}if(voiceSrc){try{voiceSrc.stop()}catch(e){}}
+    if(!voiceGain){voiceGain=ac.createGain();voiceGain.connect(ac.destination)}
+    let t=ac.currentTime+.03,last=null;
+    bufs.forEach((b,i)=>{const src=ac.createBufferSource();src.buffer=b;src.connect(voiceGain);if(i===words.length)t+=.22;src.start(t);t+=b.duration-(i<words.length-1?.03:0);last=src});
+    voiceSrc=last;last.onended=()=>{if(voiceSrc===last)voiceSrc=null};chatterAt=time}
+  catch(e){say(withStars?`${g.name}. ${STARWORDS[g.rarity]}.`:g.name)}}
 // occasional chatter: not every time, and never too close together
 function chatter(n,chance=1,gap=14){if(started&&time-chatterAt>gap&&Math.random()<chance)voice(n)}
 // ---------- read-aloud (on-device speech, works in iOS Safari and home-screen apps) ----------
@@ -1339,8 +1351,8 @@ try{speechSynthesis.onvoiceschanged=()=>{ttsVoice=pickVoice()};ttsVoice=pickVoic
 function say(text){try{if(voiceSrc){try{voiceSrc.stop()}catch(e){}voiceSrc=null}if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(!ttsVoice)ttsVoice=pickVoice();if(ttsVoice)u.voice=ttsVoice;u.lang=ttsVoice?ttsVoice.lang:'en-US';u.rate=.88;u.pitch=1.1;u.volume=1;speechSynthesis.speak(u)}catch(e){}}
 const STARWORDS=['One star','Two stars','Three stars','Four stars! A rainbow one'];
 document.addEventListener('click',e=>{const b=e.target.closest('.spk[data-say]');if(!b)return;e.stopPropagation();initAudio();const k=b.dataset.say;
-  if(k==='pop'&&popSeed!==null){const g=G(popSeed);say(`${g.name}! ${STARWORDS[g.rarity]}.`)}
-  else if(k==='det'&&detSeed!==null){const g=G(detSeed);say(`${g.name}. ${STARWORDS[g.rarity]}.`)}
+  if(k==='pop'&&popSeed!==null)sayName(popSeed,true)
+  else if(k==='det'&&detSeed!==null)sayName(detSeed,true)
   else if(k==='ip'){if(ipClip)voice(ipClip,$('ipTitle').textContent,true);else say($('ipTitle').textContent)}},true);
 $('skateExit').onclick=e=>{e.stopPropagation();sTap();endSkate()};
 // ---------- input ----------
