@@ -520,6 +520,22 @@ function sCatch(r){if(!ac)return;const t=ac.currentTime+.02,sc=[523.25,659.25,78
 function sTap(){if(ac)note(740,ac.currentTime,.12,'square',.03)}
 function chirp(){if(!ac||!save.sound)return;const t=ac.currentTime;for(let k=0;k<2+((Math.random()*3)|0);k++){try{const o=ac.createOscillator(),g=ac.createGain(),t0=t+k*.14;o.frequency.setValueAtTime(2300+Math.random()*700,t0);o.frequency.exponentialRampToValueAtTime(3500+Math.random()*900,t0+.07);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.02,t0+.01);g.gain.exponentialRampToValueAtTime(.0001,t0+.1);o.connect(g);g.connect(master);o.start(t0);o.stop(t0+.12)}catch(e){}}}
 
+
+// ---------- music (per land, crossfaded) ----------
+const MUSIC={meadow:[1,2,3,4].map(i=>`music/meadow${i}.mp3`)};
+const musicBuf={};let musicGain=null,musicSrc=null,musicList=null,musicIdx=0,curMusicLand='meadow';
+const tracksFor=land=>MUSIC[land]||MUSIC.meadow;
+function getBuf(url){if(musicBuf[url])return musicBuf[url];return musicBuf[url]=fetch(url).then(r=>r.arrayBuffer()).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej)))}
+async function playMusic(land){if(!ac)return;if(!musicGain){musicGain=ac.createGain();musicGain.gain.value=0;musicGain.connect(master)}
+  const list=tracksFor(land);musicList=list;const url=list[musicIdx++%list.length];
+  try{const buf=await getBuf(url);if(musicList!==list)return;const t=ac.currentTime,old=musicSrc,g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+2);
+    const src=ac.createBufferSource();src.buffer=buf;src.connect(g);g.connect(musicGain);src.start();src._g=g;musicSrc=src;
+    src.onended=()=>{if(musicSrc===src){musicSrc=null;musicList=null}};
+    if(old){old.onended=null;old._g.gain.cancelScheduledValues(t);old._g.gain.setValueAtTime(old._g.gain.value,t);old._g.gain.linearRampToValueAtTime(0,t+2);try{old.stop(t+2.1)}catch(e){}}}
+  catch(e){delete musicBuf[url];musicList=null}}
+function musicTick(){if(!ac||!started)return;if(musicGain)musicGain.gain.setTargetAtTime(save.sound?(room?.22:.36):0,ac.currentTime,.3);
+  const land=room?room.lm.land:landOf(P.x,P.y);if(land!==curMusicLand){curMusicLand=land;if(tracksFor(land)!==musicList)playMusic(land)}
+  if(!musicList)playMusic(curMusicLand)}
 // ---------- state ----------
 const canvas=$('game'),ctx=canvas.getContext('2d');
 const lo=document.createElement('canvas'),lctx=lo.getContext('2d');
@@ -676,6 +692,7 @@ function update(dt){
   if(motes.length>want)motes.length=want;
   const fall=moteMode==='snow'?28:moteMode==='petal'?16:moteMode==='ember'?-14:moteMode==='firefly'?0:-3;
   for(const m of motes){m.x+=Math.sin(time*.6+m.ph)*(moteMode==='firefly'?18:8)*dt+6*dt;m.y+=Math.cos(time*.5+m.ph)*6*dt+fall*(.6+m.s)*dt;if(Math.abs(m.x-cam.x)>vwW*.7||Math.abs(m.y-cam.y)>vhW*.7){m.x=cam.x+(Math.random()-.5)*vwW*1.2;m.y=cam.y+(Math.random()-.5)*vhW*1.2}}
+  musicTick();
   if(started&&!room){chirpT-=dt;if(chirpT<0){chirpT=7+Math.random()*9;chirp()}}
 }
 let moteMode='#ffffff',persistT=0;
