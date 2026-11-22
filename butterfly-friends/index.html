@@ -170,6 +170,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .stageWrap{position:relative;flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
 #stage{border-radius:16px;box-shadow:0 4px 0 rgba(59,51,80,.15);touch-action:none;background:#fff}
 #countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:150px;font-weight:700;color:#fff;text-shadow:0 6px 0 rgba(59,51,80,.35);pointer-events:none}
+#trash{position:absolute;right:10px;bottom:10px;width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 4px 0 rgba(59,51,80,.2);display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s;pointer-events:none}
+#trash.show{opacity:1;transform:scale(1)}
+#trash.hot{background:#ff8fb1;transform:scale(1.2)}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;border-radius:16px;transition:opacity .5s}
 .strip{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;padding:4px 2px 6px;flex:none;scrollbar-width:none}
 .strip::-webkit-scrollbar{display:none}
@@ -276,8 +279,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
       <button class="btn" id="boothClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#3b3350" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     </header>
     <div class="bbody">
-      <div class="stageWrap" id="stageWrap"><canvas id="stage" width="800" height="600"></canvas><div id="flash"></div><div id="countdown"></div></div>
+      <div class="stageWrap" id="stageWrap"><canvas id="stage" width="800" height="600"></canvas><div id="flash"></div><div id="countdown"></div><div id="trash">🗑️</div></div>
       <div class="strip" id="bgStrip"></div>
+      <div class="strip" id="charStrip"></div>
       <div class="strip" id="flyStrip"></div>
       <div class="brow"><button class="btn" id="snapBtn" aria-label="Take a photo">📸</button></div>
     </div>
@@ -915,7 +919,7 @@ const ownedTreasures=()=>LANDMARKS.filter(l=>l.treasure&&save.treasures.includes
 function wornList(){const w=wear(),own=ownedTreasures();return['neck','head','hand'].map(k=>w[k]).filter(k=>k&&own.includes(k)&&ART[k])}
 const dressCache={};
 // returns {src,W,H,px,pt}: src is the portrait with worn treasures (padded px left/right and pt on top so items can stick out)
-function dressed(id){const im=charImg(id);if(!im.complete||!im.naturalWidth)return null;const W=im.naturalWidth,H=im.naturalHeight,ks=wornList();
+function dressed(id,plain){const im=charImg(id);if(!im.complete||!im.naturalWidth)return null;const W=im.naturalWidth,H=im.naturalHeight,ks=plain?[]:wornList();
   if(!ks.length)return{src:im,W,H,px:0,pt:0,key:''};const key=ks.join(',');const d0=dressCache[id];if(d0&&d0.key===key)return d0;
   const px=Math.round(W*.28),pt=Math.round(H*.1),c=mk(W+px*2,H+pt),x=c.getContext('2d'),A=DRESS_AT[id]||DRESS_AT.sunny;
   x.drawImage(im,px,pt);
@@ -1261,15 +1265,22 @@ function drawBg(c,id,w,h){const k=w/SW;c.save();
     else{const tr=ART[(L.trees[0]||['tree'])[0]];if(tr){const th=h*.5,tw=th*tr.naturalWidth/tr.naturalHeight;c.drawImage(tr,w*.8-tw/2,hz+h*.1-th,tw,th);c.drawImage(tr,w*.08-tw/2,hz+h*.05-th*.8,tw*.8,th*.8)}}}
   c.restore()}
 function drawStage(c,t,still){c.setTransform(1,0,0,1,0,0);drawBg(c,booth.bg,SW,SH);
-  const ch=booth.ch,d=dressed(curChar().id);
-  if(d){const hh=ch.s*SH*.72,k=hh/d.H,b=still?0:Math.sin(t*2)*3,sw=(d.W+d.px*2)*k,sh=(d.H+d.pt)*k;c.drawImage(d.src,ch.x-sw/2,ch.y-sh+b,sw,sh);ch.hw=d.W*k/2;ch.hh=hh}
+  // her own character wears her treasures; friends she adds come as they are
+  [...booth.chars].sort((a,b)=>a.y-b.y).forEach((ch,i)=>{const d=dressed(ch.id,ch.id!==save.char);
+    if(d){const hh=ch.s*SH*.72,k=hh/d.H,b=still?0:Math.sin(t*2+ch.ph)*3,sw=(d.W+d.px*2)*k,sh=(d.H+d.pt)*k;c.drawImage(d.src,ch.x-sw/2,ch.y-sh+b,sw,sh);ch.hw=d.W*k/2;ch.hh=hh}});
   const fc=booth.face;if(fc){const h=150*fc.s,w=h*fc.img.width/fc.img.height,b=still?0:Math.sin(t*2.4)*2;c.save();c.shadowColor='rgba(59,51,80,.25)';c.shadowBlur=10;c.shadowOffsetY=4;c.drawImage(fc.img,fc.x-w/2,fc.y-h/2+b,w,h);c.restore()}
   for(const f of booth.flies){const fl=still?1:.55+.45*(.5+.5*Math.cos(t*4+f.ph)),bob=still?0:Math.sin(t*1.6+f.ph)*4;if(f.art){const im=ART[f.art];if(im){const h=120*f.s,w=h*im.naturalWidth/im.naturalHeight;c.save();c.translate(f.x,f.y+bob*.5);c.rotate(f.rot*.5);c.drawImage(im,-w/2,-h/2,w,h);c.restore()}}else drawFly(c,sprite(f.seed,96),f.x,f.y+bob,f.rot,fl,46*f.s)}}
 function boothLoop(){if(!isShown('booth')){booth.raf=0;return}drawStage(stx,performance.now()/1000,false);booth.raf=requestAnimationFrame(boothLoop)}
-function sizeStage(){const sw=$('stageWrap'),w=Math.max(160,Math.min(sw.clientWidth,sw.clientHeight*4/3));stage.style.width=w+'px';stage.style.height=w*.75+'px'}
+function sizeStage(){const sw=$('stageWrap'),w=Math.max(160,Math.min(sw.clientWidth,sw.clientHeight*4/3));stage.style.width=w+'px';stage.style.height=w*.75+'px';const t=$('trash').style;t.right=Math.max(0,(sw.clientWidth-w)/2)+10+'px';t.bottom=Math.max(0,(sw.clientHeight-w*.75)/2)+10+'px'}
 function thumb(w,h,draw,cls,label,onclick){const b=document.createElement('button');b.className=cls||'';b.setAttribute('aria-label',label||'');const cv=mk(w*DPR,h*DPR);cv.style.width=w+'px';cv.style.height=h+'px';draw(cv.getContext('2d'),cv.width,cv.height);b.append(cv);b.onclick=onclick;return b}
 function buildBgStrip(){const st=$('bgStrip');st.innerHTML='';
   for(const b of BOOTH_BGS){if(!bgAvail(b))continue;const el=thumb(84,63,(c,w,h)=>drawBg(c,b.id,w,h),b.id===booth.bg?'sel':'',b.lm?b.lm.name:'',()=>{sTap();booth.bg=b.id;buildBgStrip();if(b.lm)voice('lm_'+b.lm.id,b.lm.name,true)});st.append(el)}}
+function buildCharStrip(){const st=$('charStrip');st.innerHTML='';
+  for(const c of CHARS){const on=booth.chars.some(o=>o.id===c.id),im=charImg(c.id);
+    st.append(thumb(52,60,(x,w,h)=>{if(im.complete&&im.naturalWidth){const s2=w*2.1/im.naturalWidth;x.drawImage(im,(w-im.naturalWidth*s2)/2,-h*.08,im.naturalWidth*s2,im.naturalHeight*s2)}},on?'on':'',c.name,()=>{
+      const i=booth.chars.findIndex(o=>o.id===c.id);
+      if(i>=0){booth.chars.splice(i,1);sTap()}else{if(booth.chars.length>=6)booth.chars.shift();const xs=[.34,.66,.14,.86,.5,.24,.76].map(f=>f*SW),fx=xs.find(x=>booth.chars.every(o=>Math.abs(o.x-x)>90))??90+Math.random()*620;booth.chars.push({id:c.id,x:fx,y:SH*(.88+Math.random()*.1),s:1,ph:Math.random()*6});voice('hi_'+c.id,c.name,true)}
+      buildCharStrip()}))}}
 function buildFlyStrip(){const st=$('flyStrip');st.innerHTML='';const seen=new Set(),list=[];
   for(const s of [...save.friends].reverse().concat([...save.seeds].reverse())){if(!seen.has(s)){seen.add(s);list.push(s)}if(list.length>=80)break}
   for(const l of LANDMARKS.filter(l=>l.treasure&&save.treasures.includes(l.id))){const k=l.treasure;if(!ART[k])continue;const on=booth.flies.some(f=>f.art===k);
@@ -1281,28 +1292,32 @@ function buildFlyStrip(){const st=$('flyStrip');st.innerHTML='';const seen=new S
     const i=booth.flies.findIndex(f=>f.seed===seed);
     if(i>=0)booth.flies.splice(i,1);else{if(booth.flies.length>=14)booth.flies.shift();booth.flies.push({seed,x:120+Math.random()*560,y:90+Math.random()*300,s:1,rot:(Math.random()-.5)*.5,ph:Math.random()*6});chirp();if(save.sound)sayName(seed,false)}
     sTap();buildFlyStrip()}))}}
-function openBooth(){sTap();initAudio();if(!booth.ch)booth.ch={x:SW*.34,y:SH*.97,s:1};
+function openBooth(){sTap();initAudio();if(!booth.chars){booth.chars=[{id:save.char||CHARS[0].id,x:SW*.34,y:SH*.97,s:1,ph:0}]}
   if(!booth.flies.length)booth.flies=save.friends.slice(-3).map((seed,i)=>({seed,x:470+i*110,y:150+(i%2)*120,s:1,rot:(i-1)*.2,ph:i*2}));
   if(!BOOTH_BGS.some(b=>b.id===booth.bg&&bgAvail(b)))booth.bg='booth';
-  $('booth').classList.add('show');stage.style.width=stage.style.height='10px';requestAnimationFrame(sizeStage);try{document.fonts.load('700 44px Andika');document.fonts.load('400 26px Andika')}catch(e){}buildBgStrip();buildFlyStrip();if(!booth.raf)boothLoop();if(!booth.greeted){booth.greeted=true;voice('pb_hello','Welcome to the photo booth!')}}
+  $('booth').classList.add('show');stage.style.width=stage.style.height='10px';requestAnimationFrame(sizeStage);try{document.fonts.load('700 44px Andika');document.fonts.load('400 26px Andika')}catch(e){}buildBgStrip();buildCharStrip();buildFlyStrip();if(!booth.raf)boothLoop();if(!booth.greeted){booth.greeted=true;voice('pb_hello','Welcome to the photo booth!')}}
 $('boothBtn').onclick=openBooth;
 $('boothClose').onclick=()=>{sTap();stopCam();$('booth').classList.remove('show')};
-$('boothClear').onclick=()=>{sTap();booth.flies.length=0;buildFlyStrip()};
+$('boothClear').onclick=()=>{sTap();booth.flies.length=0;booth.face=null;booth.chars=[{id:save.char||CHARS[0].id,x:SW*.34,y:SH*.97,s:1,ph:0}];buildCharStrip();buildFlyStrip()};
 try{new ResizeObserver(()=>{if(isShown('booth'))sizeStage()}).observe($('stageWrap'))}catch(e){addEventListener('resize',()=>{if(isShown('booth'))sizeStage()})}
 // drag / tap-to-resize on the stage
 function stagePt(e){const r=stage.getBoundingClientRect();return{x:(e.clientX-r.left)*SW/r.width,y:(e.clientY-r.top)*SH/r.height,out:e.clientX<r.left-10||e.clientX>r.right+10||e.clientY<r.top-10||e.clientY>r.bottom+10}}
 function hitStage(p){const fc=booth.face;if(fc){const h=75*fc.s,w=h*fc.img.width/fc.img.height;if(((p.x-fc.x)/w)**2+((p.y-fc.y)/h)**2<1.1)return fc}
   for(let i=booth.flies.length-1;i>=0;i--){const f=booth.flies[i];if(Math.hypot(p.x-f.x,p.y-f.y)<62*f.s)return f}
-  const c=booth.ch;if(c.hw&&Math.abs(p.x-c.x)<c.hw*.8&&p.y<c.y&&p.y>c.y-c.hh)return c;return null}
+  for(const c of [...booth.chars].sort((a,b)=>b.y-a.y))if(c.hw&&Math.abs(p.x-c.x)<c.hw*.8&&p.y<c.y&&p.y>c.y-c.hh)return c;return null}
 stage.addEventListener('pointerdown',e=>{if(booth.busy)return;const p=stagePt(e),it=hitStage(p);if(!it)return;stage.setPointerCapture(e.pointerId);
   booth.drag={it,dx:it.x-p.x,dy:it.y-p.y,sx:p.x,sy:p.y,moved:false};
   if(booth.flies.includes(it)){booth.flies.splice(booth.flies.indexOf(it),1);booth.flies.push(it)}});
 stage.addEventListener('pointermove',e=>{const d=booth.drag;if(!d)return;const p=stagePt(e);if(Math.hypot(p.x-d.sx,p.y-d.sy)>8)d.moved=true;
-  d.it.x=clamp(p.x+d.dx,-60,SW+60);d.it.y=clamp(p.y+d.dy,-60,SH+(d.it===booth.ch?SH*.4:60))});
-function stageUp(e){const d=booth.drag;if(!d)return;booth.drag=null;const p=stagePt(e);
+  d.it.x=clamp(p.x+d.dx,-60,SW+60);d.it.y=clamp(p.y+d.dy,-60,SH+(booth.chars.includes(d.it)?SH*.4:60));if(d.moved){$('trash').classList.add('show');$('trash').classList.toggle('hot',overTrash(e))}});
+// trash can appears while dragging; drop on it (or off the picture) to take something away
+function overTrash(e){const r=$('trash').getBoundingClientRect();return e.clientX>r.left-14&&e.clientX<r.right+14&&e.clientY>r.top-14&&e.clientY<r.bottom+14}
+function removeItem(it){if(it===booth.face)booth.face=null;else if(booth.chars.includes(it)){booth.chars.splice(booth.chars.indexOf(it),1);buildCharStrip()}else if(booth.flies.includes(it)){booth.flies.splice(booth.flies.indexOf(it),1);buildFlyStrip()}
+  if(ac){const t=ac.currentTime;note(520,t,.12,'triangle',.07);note(330,t+.08,.16,'triangle',.06)}}
+function stageUp(e){const d=booth.drag;if(!d)return;booth.drag=null;const tr=$('trash'),hit=d.moved&&overTrash(e);tr.classList.remove('show','hot');const p=stagePt(e);
+  if(hit||(d.moved&&p.out)){removeItem(d.it);return}
   if(!d.moved){const S2=[1,1.5,2,.7],i=S2.indexOf(d.it.s);d.it.s=S2[(i+1)%S2.length];sTap();if(booth.flies.includes(d.it))chirp()}
-  else if(p.out&&d.it===booth.face){booth.face=null;sTap()}
-  else if(p.out&&booth.flies.includes(d.it)){booth.flies.splice(booth.flies.indexOf(d.it),1);buildFlyStrip()}}
+}
 stage.addEventListener('pointerup',stageUp);stage.addEventListener('pointercancel',stageUp);
 // snap!
 function photoFrame(){const B=40,BB=148,out=mk(SW+B*2,SH+B+BB),c=out.getContext('2d');c.fillStyle='#fffdf8';c.fillRect(0,0,out.width,out.height);
