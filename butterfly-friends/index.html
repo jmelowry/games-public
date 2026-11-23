@@ -162,6 +162,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
 
+#gardenBar{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);z-index:6;display:none;gap:10px}
+#gardenBar.show{display:flex}
+#gardenBar button{width:84px;height:84px;border-radius:50%;padding:6px;background:#fff7e8;display:flex;align-items:center;justify-content:center;font-size:40px}
+#gardenBar button img{width:100%;height:100%;object-fit:contain}
+@media (max-width:440px){#gardenBar button{width:68px;height:68px;font-size:32px}#gardenBar{gap:6px}}
 #snackBtn{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);z-index:6;width:96px;height:96px;border-radius:50%;padding:0;display:none;background:#fff7d6;animation:snackPulse 1.2s ease-in-out infinite}
 #snackBtn.show{display:flex}
 #snackBtn img{width:64px;height:64px;object-fit:contain}
@@ -281,6 +286,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 <button class="btn" id="mapBtn" aria-label="World map"><span class="em">🗺️</span></button>
 <div id="skateHud"><div class="skpill">❄️ <span id="skateCount">0</span></div><button class="btn round" id="skateExit" aria-label="Done skating"><svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 <div id="fade"></div>
+<div id="gardenBar"></div>
 <button class="btn" id="snackBtn" aria-label="Share a snack"><img id="snackImg" alt=""><span id="snackN"></span></button>
 <button class="btn" id="boothBtn" aria-label="Photo booth"><span class="em">📷</span></button>
 <div class="overlay dim" id="booth" style="padding:calc(var(--safe-t) + 8px) calc(var(--safe-r) + 8px) calc(var(--safe-b) + 8px) calc(var(--safe-l) + 8px)">
@@ -558,17 +564,24 @@ function catmullPath(P,closed){const n=P.length,segs=closed?n:n-1;
 // trees, hiding spots, decor
 function nearTall(x,y,m){const cx=(x/CELL)|0,cy=(y/CELL)|0,m2=m*m;for(let i=cx-1;i<=cx+1;i++)for(let j=cy-1;j<=cy+1;j++){if(i<0||j<0||i>=GW||j>=GH)continue;for(const t of tall[i+j*GW]){const dx=x-t.x,dy=y-t.y;if(dx*dx+dy*dy<m2)return true}}return false}
 const pick=a=>a[(wr()*a.length)|0];
+// ---------- butterfly garden: a fenced plot near home, kept clear of paths, trees and flowers ----------
+const GD={w:380,h:270,x:CX,y:CY+420};
+(function(){const fits=(x,y)=>{for(const[dx,dy]of[[0,0],[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5],[0,-.5],[0,.5],[-.5,0],[.5,0]])if(nearPath(x+dx*GD.w,y+dy*GD.h,46)||blocked(x+dx*GD.w,y+dy*GD.h,60))return false;
+    return LANDMARKS.every(l=>Math.hypot(x-l.x,y-(l.y-(l.h||l.w)*.3))>l.w*.6+GD.w*.75)};
+  for(let r=300;r<900;r+=40)for(let k=0;k<24;k++){const a=Math.PI/2+(k%2?1:-1)*Math.ceil(k/2)*TAU/24,x=CX+Math.cos(a)*r,y=CY+Math.sin(a)*r*.8;if(fits(x,y)){GD.x=x;GD.y=y;return}}})();
+const inGarden=(x,y,m=0)=>Math.abs(x-GD.x)<GD.w/2+m&&Math.abs(y-GD.y)<GD.h/2+m;
+const PLOTS=[];for(let r=0;r<3;r++)for(let c=0;c<4;c++)PLOTS.push({i:r*4+c,x:GD.x+(c-1.5)*84,y:GD.y-62+r*72});
 function addTree(x,y,spec){const t={kind:'tree',x,y,img:spec[0],w:spec[1]*(.9+wr()*.25)};tall[cellOf(x,y)].push(t)}
 for(let x=30;x<W;x+=60+wr()*55){for(const y of[45+wr()*70,H-25-wr()*55]){addTree(x,y,LANDS[landOf(x,y)].border)}if(wr()<.6){const y=170+wr()*60;addTree(x+25,y,LANDS[landOf(x+25,y)].border)}}
 for(let y=160;y<H-60;y+=60+wr()*55){for(const x of[35+wr()*70,W-35-wr()*70]){addTree(x,y,LANDS[landOf(x,y)].border)}if(wr()<.5){const x=150+wr()*50;addTree(x,y+20,LANDS[landOf(x,y)].border)}if(wr()<.5){const x=W-150-wr()*50;addTree(x,y+20,LANDS[landOf(x,y)].border)}}
 for(let i=0;i<11000;i++){const x=260+wr()*(W-520),y=300+wr()*(H-520),L=LANDS[landOf(x,y)];
-  if(wr()>L.treeP*.13)continue;if(Math.hypot(x-CX,y-CY)<380||nearPath(x,y,85)||blocked(x,y,70)||nearTall(x,y,115))continue;
+  if(wr()>L.treeP*.13)continue;if(Math.hypot(x-CX,y-CY)<380||inGarden(x,y,150)||nearPath(x,y,85)||blocked(x,y,70)||nearTall(x,y,115))continue;
   addTree(x,y,pick(L.trees))}
 const clusters=[];for(let i=0;i<160;i++)clusters.push({x:300+wr()*(W-600),y:300+wr()*(H-600)});
 for(let i=0;i<15000;i++){let x,y;if(wr()<.65){const c=clusters[(wr()*clusters.length)|0],a=wr()*TAU,d=Math.sqrt(wr())*260;x=c.x+Math.cos(a)*d;y=c.y+Math.sin(a)*d*.8}else{x=200+wr()*(W-400);y=220+wr()*(H-400)}
   if(x<200||y<240||x>W-200||y>H-140)continue;const land=landOf(x,y),L=LANDS[land];if(wr()>L.hideP*.6)continue;
-  if(nearPath(x,y,36)||blocked(x,y,24))continue;const s=pick(L.hide);ground[cellOf(x,y)].push({kind:'h',x,y,img:s[0],w:s[1]*(.9+wr()*.2),land})}
-for(let i=0;i<2200;i++){const x=200+wr()*(W-400),y=240+wr()*(H-420),L=LANDS[landOf(x,y)];if(nearPath(x,y,30)||blocked(x,y,20))continue;const s=pick(L.deco);ground[cellOf(x,y)].push({kind:'d',x,y,img:s[0],w:s[1]*(.75+wr()*.5)})}
+  if(nearPath(x,y,36)||blocked(x,y,24)||inGarden(x,y,40))continue;const s=pick(L.hide);ground[cellOf(x,y)].push({kind:'h',x,y,img:s[0],w:s[1]*(.9+wr()*.2),land})}
+for(let i=0;i<2200;i++){const x=200+wr()*(W-400),y=240+wr()*(H-420),L=LANDS[landOf(x,y)];if(nearPath(x,y,30)||blocked(x,y,20)||inGarden(x,y,30))continue;const s=pick(L.deco);ground[cellOf(x,y)].push({kind:'d',x,y,img:s[0],w:s[1]*(.75+wr()*.5)})}
 for(const c of ground)c.sort((a,b)=>a.y-b.y);
 // landmarks that stand up go in the y-sorted list; flat/water ones are drawn on the ground
 for(const lm of LANDMARKS)if(lm.kind!=='water'&&lm.kind!=='flat')tall[cellOf(lm.x,lm.y)].push({kind:'lm',x:lm.x,y:lm.y,lm});
@@ -787,7 +800,7 @@ function update(dt){
   if(skate&&!modal){skateStep(dt,mx,my)}
   else if(mx||my){const sp=room?150:180;P.x+=mx*sp*dt;P.y+=my*sp*dt;P.moving=true;P.walk+=dt*12;if(Math.abs(mx)>.2)P.face=mx>0?1:-1;room?collideRoom(P):collide(P)}else P.moving=false;
   P.swing=Math.max(0,P.swing-dt);skateCool=Math.max(0,skateCool-dt);
-  if(started&&!skate)updateAnimals(modal?0:dt);else $('snackBtn').classList.remove('show');
+  if(started&&!skate){updateAnimals(modal?0:dt);updateGarden(modal?0:dt)}else{$('snackBtn').classList.remove('show');$('gardenBar').classList.remove('show')}
   if(started&&!room&&!skate&&!modal&&skateCool<=0&&LAKE&&inLake(P.x,P.y,.97))startSkate();
   // camera
   const hw=lo.width/2/S,hh=lo.height/2/S,k=Math.min(1,dt*(started?6:1));
@@ -1013,6 +1026,7 @@ function render(){
   // flat landmarks and ponds
   for(const lm of LANDMARKS){if(lm.kind!=='water'&&lm.kind!=='flat')continue;if(lm.x+lm.w/2<L||lm.x-lm.w/2>R||lm.y<T||lm.y-lm.h>B)continue;const im=ART[lm.img];if(im)artW(x,im,lm.x,lm.y,lm.w)}
   if(ART.pond)for(const p of PONDS){if(p.cx+p.w/2<L||p.cx-p.w/2>R||p.cy+p.h/2<T||p.cy-p.h/2>B)continue;x.drawImage(ART.pond,p.cx-p.w/2,p.cy-p.h/2,p.w,p.h)}
+  drawGardenGround(x,L,T,R,B);
   // ground decor and hiding spots
   const c0=clamp(((L-80)/CELL)|0,0,GW-1),c1=clamp(((R+80)/CELL)|0,0,GW-1),r0=clamp(((T-60)/CELL)|0,0,GH-1),r1=clamp(((B+260)/CELL)|0,0,GH-1);
   for(let j=r0;j<=r1;j++)for(let i=c0;i<=c1;i++)for(const it of ground[i+j*GW]){if(it.x<L-50||it.x>R+50||it.y<T-10||it.y>B+70)continue;const im=ART[it.img];if(im)artW(x,im,it.x,it.y+8,it.w)}
@@ -1020,9 +1034,10 @@ function render(){
   for(const b of wild){b.f=b.state==='hide'?.1:flapOf(b,b.state==='rest');if(b.state==='fly')shadowOf(x,b)}for(const f of friends){f.f=flapOf(f,false);shadowOf(x,f)}
   // y-sorted trees, buildings and the player
   const list=[];for(let j=r0;j<=r1;j++)for(let i=c0;i<=c1;i++)for(const t of tall[j*GW+i]){const w=t.kind==='lm'?t.lm.w:t.w;if(t.x>L-w&&t.x<R+w&&t.y>T-20&&t.y<B+(t.kind==='lm'?t.lm.h:260))list.push(t)}
-  if(started)list.push(P);for(const a of AN)if(a.x>L-60&&a.x<R+60&&a.y>T-20&&a.y<B+80)list.push(a);list.sort((a,b)=>a.y-b.y);
-  for(const it of list){if(it===P)drawCharImg(x,P,curChar());else if(it.animal)drawAnimal(x,it);else drawTreeOrLm(x,it)}
+  if(started)list.push(P);for(const a of AN)if(a.x>L-60&&a.x<R+60&&a.y>T-20&&a.y<B+80)list.push(a);for(const p of PLOTS)if(gplots()[p.i]&&p.x>L-40&&p.x<R+40&&p.y>T-10&&p.y<B+70)list.push(p);list.sort((a,b)=>a.y-b.y);
+  for(const it of list){if(it===P)drawCharImg(x,P,curChar());else if(it.animal)drawAnimal(x,it);else if(it.i!==undefined&&!it.kind)drawPlant(x,it);else drawTreeOrLm(x,it)}
   // butterflies
+  if(!room)for(const b of gFlies){if(b.x<L-40||b.x>R+40||b.y<T-40||b.y>B+60)continue;shadowOf(x,b);drawFly(x,b.sp,b.x,b.y-b.z,b.rot,b.f??1,b.u*.95)}
   let seen=false;for(const b of wild){if(b.x<L-40||b.x>R+40||b.y<T-40||b.y>B+60)continue;seen=true;drawFly(x,b.sp,b.x,b.y-b.z,b.rot,b.f,b.state==='hide'?b.u*.8:b.u)}if(seen||!started)lastSeen=time;
   for(const f of friends)drawFly(x,f.sp,f.x,f.y-f.z,f.rot,f.f,f.u);
   // ---- compose + modern layer ----
@@ -1194,6 +1209,8 @@ const BADGES=[
   ...LAND_KEYS.map(k=>({id:'land_'+k,em:LANDS[k].em,label:`Explored ${LANDS[k].name}`,goal:2,val:()=>LANDMARKS.filter(l=>l.land===k&&save.landmarks.includes(l.id)).length})),
   {id:'lmall',em:'🗺️',label:'Found every place',goal:10,val:s=>s.lm},
   {id:'lands5',em:'🌍',label:'A butterfly from every land',goal:5,val:s=>s.landsCaught},
+  {id:'gd1',em:'🌷',label:'First flower',goal:1,val:()=>gardenCount()},
+  {id:'gdall',em:'🌻',label:'Full garden',goal:12,val:()=>gardenCount()},
   {id:'ani1',em:'🐾',label:'First animal friend',goal:1,val:()=>ANIMALS.filter(a=>isFriend(a.id)).length},
   {id:'aniall',em:'🐰',label:'Every animal friend',goal:5,val:()=>ANIMALS.filter(a=>isFriend(a.id)).length},
   {id:'tr1',em:'💎',label:'First treasure',goal:1,val:s=>s.tr},
@@ -1224,7 +1241,7 @@ function fillBadgeStrip(id){const el=$(id);el.innerHTML='';el.style.display='non
   el.append(m,t,sp);el.style.display='flex';sTrophy()}
 function sTrophy(){if(!ac)return;const t=ac.currentTime+.6;[1046.5,1318.5,1568].forEach((f,i)=>note(f,t+i*.07,.4,'triangle',.05))}
 let extraBadges=0;
-function badgeRank(b){const R={aniall:98.5,ani1:94,skate30:84,skate1:83,resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
+function badgeRank(b){const R={gdall:97,gd1:90,aniall:98.5,ani1:94,skate30:84,skate1:83,resall:99,lmall:98,trall:97,res1:96,lands5:89,tr1:88,lm1:87,r3:100,r2:90,rainbow:85,r2x3:80,r1:70,r1x5:65,n200:62,n100:61,n50:60,n25:59,n10:58,n5:57,tail:50,eyes:49,polka:48,pastel:47,friends:30,n1:95};return R[b.id]??(b.id.startsWith('h_')?40:b.id.startsWith('land_')?86:0)}
 function updateBadgeCount(){$('bcount').textContent=save.badges.length}
 function nextBadge(){if(popSeed!==null||!badgeQueue.length)return;const b=badgeQueue.shift(),st=stats();badgeShowing=true;
   const box=$('bpMedal');box.innerHTML='';box.append(medalEl(b,st,true));$('bpName').textContent=b.label;$('badgePop').classList.add('show');
@@ -1265,6 +1282,7 @@ function drawMap(){const c=mapCanvas.getContext('2d'),s=mapCanvas.width;c.setTra
   c.drawImage(fogC,ox,oy,ex-ox,ey-oy);
   for(const lm of LANDMARKS){if(!save.landmarks.includes(lm.id)||!ART[lm.img])continue;const[mx,my]=mapXY(lm.x,lm.y-lm.h*.4,s),r=s*.045;
     c.fillStyle='rgba(255,255,255,.9)';c.beginPath();c.arc(mx,my,r*1.15,0,TAU);c.fill();const im=ART[lm.img],k=Math.min(r*2/im.naturalWidth,r*2/im.naturalHeight);c.drawImage(im,mx-im.naturalWidth*k/2,my-im.naturalHeight*k/2,im.naturalWidth*k,im.naturalHeight*k)}
+  {const[gx,gy]=mapXY(GD.x,GD.y,s),r=s*.04;c.fillStyle='rgba(255,255,255,.9)';c.beginPath();c.arc(gx,gy,r*1.15,0,TAU);c.fill();const im=ART.flowers2;if(im){const k=Math.min(r*2/im.naturalWidth,r*2/im.naturalHeight);c.drawImage(im,gx-im.naturalWidth*k/2,gy-im.naturalHeight*k/2,im.naturalWidth*k,im.naturalHeight*k)}}
   const pp=room?room.lm.front:P,[px,py]=mapXY(pp.x,pp.y,s),pr=s*.035*(1+Math.sin(time*5)*.08);
   c.fillStyle='#ff6f9a';c.beginPath();c.arc(px,py,pr*1.25,0,TAU);c.fill();const ci=charImg(curChar().id);
   if(ci.complete&&ci.naturalWidth){c.save();c.beginPath();c.arc(px,py,pr,0,TAU);c.clip();c.fillStyle='#fff';c.fillRect(px-pr,py-pr,pr*2,pr*2);const w2=pr*3.4;c.drawImage(ci,px-w2/2,py-pr*1.05,w2,w2*ci.naturalHeight/ci.naturalWidth);c.restore()}}
@@ -1353,6 +1371,75 @@ function drawAnimalOverlay(c,L,T,R,B){
   for(const a of AN){if(a.x<L-60||a.x>R+60||a.y<T-80||a.y>B+40)continue;const d=Math.hypot(P.x-a.x,P.y-a.y),h=hearts(a.id),top=a.y-ANIMAL_H-6;
     if(h<3&&d<300){for(let i=0;i<3;i++){c.font='12px sans-serif';c.textAlign='center';c.globalAlpha=i<h?1:.35;c.fillText(i<h?'💗':'🤍',a.x+(i-1)*13,top)}c.globalAlpha=1}
     if(a.bub){c.font='18px sans-serif';c.textAlign='center';const k=Math.min(1,a.bubT*4);c.globalAlpha=k;c.fillText(a.bub,a.x+14,top-(h<3&&d<300?14:0)-Math.sin(time*5)*1.5);c.globalAlpha=1}}}
+
+
+// ---------- the butterfly garden ----------
+// Twelve plots near home. Plant a flower (it grows in about a minute; water speeds it up). Blooms bring her own
+// butterflies to live in the garden, and now and then a new wild butterfly of the flower's colors comes to visit.
+const FLOWERS=[{k:1,name:'daisies',hue:[38,75],c:'#ffe27a'},{k:2,name:'cosmos',hue:[275,345],c:'#f39ad0'},{k:3,name:'poppies',hue:[345,40],c:'#ff7a4a'},{k:4,name:'forget-me-nots',hue:[185,265],c:'#7fb0ff'}];
+const BUD_T=20,BLOOM_T=60;
+const gplots=()=>{if(!Array.isArray(save.garden)||save.garden.length!==12)save.garden=Array(12).fill(0);return save.garden};
+function plotAge(i){const g=gplots()[i];return g?(Date.now()-g.t)/1000+(g.w||0):0}
+function plotStage(i){const g=gplots()[i];if(!g)return 0;const a=plotAge(i);return a<BUD_T?1:a<BLOOM_T?2:3}
+const bloomList=()=>PLOTS.filter(p=>plotStage(p.i)===3);
+function hueIn(h,r){h=((h%360)+360)%360;return r[0]<r[1]?h>=r[0]&&h<=r[1]:h>=r[0]||h<=r[1]}
+let gFlies=[],gKey='',visitT=20,gHere=false,gPlot=-1,waterAt=0;
+function gardenFlies(){const blooms=bloomList(),key=blooms.map(p=>p.i+':'+gplots()[p.i].k).join(',')+'|'+save.seeds.length;if(key===gKey)return;gKey=key;
+  const uniq=[...new Set(save.seeds)],n=Math.min(uniq.length,blooms.length*2,12);const picked=[];
+  for(let k=0;k<n;k++){const p=blooms[k%blooms.length],F=FLOWERS[gplots()[p.i].k-1];
+    const s=uniq.find(s=>!picked.includes(s)&&hueIn(G(s).hue,F.hue))??uniq.find(s=>!picked.includes(s));if(s==null)break;picked.push(s)}
+  const keep=gFlies.filter(b=>picked.includes(b.seed));gFlies=picked.map(s=>keep.find(b=>b.seed===s)||Object.assign(makeB(s,GD.x+(Math.random()-.5)*GD.w,GD.y+(Math.random()-.5)*GD.h,'fly','meadow'),{gt:0,tgt:null,rest:0}))}
+function updateGarden(dt){if(!started)return;const d=Math.hypot(P.x-GD.x,P.y-GD.y),near=d<1300;
+  const inside=!room&&inGarden(P.x,P.y,10);if(inside&&!gHere){gHere=true;if(!save.gardenSaid){save.gardenSaid=1;persist();voice('gd_welcome','Welcome to your butterfly garden!')}}else if(!inside)gHere=false;
+  // newly opened flowers
+  for(const p of PLOTS){const g=gplots()[p.i];if(g&&!g.b&&plotStage(p.i)===3){g.b=1;persist();if(d<700){sparkle(p.x,p.y-24,'#fff6b0');chatter('gd_bloom',1,6);checkBadges(false)}}}
+  if(!near)return;gardenFlies();
+  for(const b of gFlies){if(b.rest>0){b.rest-=dt;b.z=Math.max(4,b.z-dt*40);b.f=flapOf(b,true);if(b.rest<=0)b.tgt=null;continue}
+    if(!b.tgt){const bl=bloomList();if(!bl.length)break;const q=bl[(Math.random()*bl.length)|0];b.tgt={x:q.x+(Math.random()-.5)*26,y:q.y-6}}
+    const dx=b.tgt.x-b.x,dy=b.tgt.y-b.y,dd=Math.hypot(dx,dy);b.z+=((dd<30?10:26)-b.z)*Math.min(1,dt*2);
+    if(dd<6){b.rest=2+Math.random()*4;continue}const sp=Math.min(dd,40*dt);b.x+=dx/dd*sp+Math.sin(time*3+b.ph0)*.6;b.y+=dy/dd*sp+Math.cos(time*2.6+b.ph0)*.5;b.rot=Math.max(-.6,Math.min(.6,dx/90));b.f=flapOf(b,false)}
+  // visitors: a new wild butterfly in a blooming flower's colors
+  const blooms=bloomList();if(blooms.length&&d<800&&!room){visitT-=dt;if(visitT<=0){visitT=28+Math.random()*20;
+    if(wild.filter(b=>b.visitor).length<2){const q=blooms[(Math.random()*blooms.length)|0],F=FLOWERS[gplots()[q.i].k-1];let seed=null;
+      for(let i=0;i<400;i++){const s2=rand30();if(owned.has(s2)||RESIDENT_SET.has(s2))continue;const g=G(s2);if(g.rarity<3&&hueIn(g.hue,F.hue)){seed=s2;break}}
+      if(seed!=null){const a=Math.random()*TAU,b=makeB(seed,GD.x+Math.cos(a)*GD.w*.8,GD.y+Math.sin(a)*GD.h*.8,'fly','meadow');b.visitor=true;b.home={x:GD.x,y:GD.y};wild.push(b);chatter('gd_visit',1,10)}}}}
+  // which plot is she standing on?
+  let best=-1,bd=40;if(inside)for(const p of PLOTS){const dd=Math.hypot(P.x-p.x,P.y-(p.y-4));if(dd<bd){bd=dd;best=p.i}}
+  if(best!==gPlot||(best>=0&&gBarStage!==plotStage(best)))buildGardenBar(best)}
+let gBarStage=-1;
+function buildGardenBar(i){gPlot=i;const bar=$('gardenBar');bar.innerHTML='';gBarStage=i>=0?plotStage(i):-1;if(i<0||modalOpen()){bar.classList.remove('show');return}
+  const st=gBarStage,mk2=(html,label,fn)=>{const b=document.createElement('button');b.className='btn';b.innerHTML=html;b.setAttribute('aria-label',label);b.onclick=e=>{e.stopPropagation();initAudio();fn()};bar.append(b)};
+  if(st===0){for(const F of FLOWERS)mk2(`<img src="map/flowers${F.k}.webp" alt="">`,F.name,()=>plant(i,F.k));if(!save.plantSaid){save.plantSaid=1;voice('gd_plant',`Let's plant a flower!`)}}
+  else if(st<3)mk2('💧','Water',()=>water(i));
+  else mk2('✂️','Pick the flowers',()=>pickPlot(i));
+  bar.classList.add('show')}
+function sparkle(x,y,c){for(let i=0;i<14;i++){const a=Math.random()*TAU,sp=30+Math.random()*60;parts.push({x,y,z:10,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.6,vz:40+Math.random()*60,life:0,max:.7+Math.random()*.4,c:i%2?'#ffffff':c,sz:2+Math.random()*2,star:true})}}
+function plant(i,k){gplots()[i]={k,t:Date.now(),w:0};persist();const p=PLOTS[i];sparkle(p.x,p.y,'#a8e07a');if(ac){const t=ac.currentTime;note(523,t,.12,'triangle',.07);note(784,t+.08,.18,'triangle',.06)}gBarStage=-2;checkBadges(false)}
+function water(i){const g=gplots()[i];if(!g)return;const now=performance.now();if(now-waterAt<400)return;waterAt=now;g.w=(g.w||0)+12;persist();const p=PLOTS[i];
+  for(let k=0;k<12;k++)parts.push({x:p.x+(Math.random()-.5)*20,y:p.y-4,z:40+Math.random()*20,vx:(Math.random()-.5)*20,vy:0,vz:-20-Math.random()*30,life:0,max:.6,c:'#8fd0ff',sz:2.4});
+  if(ac){const t=ac.currentTime;for(let k=0;k<4;k++)note(1200+Math.random()*600,t+k*.05,.06,'sine',.04)}chatter('gd_water',.35,20);gBarStage=-2}
+function pickPlot(i){gplots()[i]=0;persist();sparkle(PLOTS[i].x,PLOTS[i].y-20,'#ffd1e0');sTap();gBarStage=-2}
+function gardenCount(){return bloomList().length}
+// drawing: tilled soil and a little fence on the ground, plants in the y-sorted list
+function drawGardenGround(x,L,T,R,B){if(GD.x+GD.w/2<L||GD.x-GD.w/2>R||GD.y+GD.h/2<T-30||GD.y-GD.h/2>B+30)return;const l=GD.x-GD.w/2,t=GD.y-GD.h/2,r=GD.x+GD.w/2,b=GD.y+GD.h/2;
+  x.fillStyle='rgba(120,170,80,.35)';x.fillRect(l+6,t+6,GD.w-12,GD.h-12);
+  for(const p of PLOTS){x.fillStyle='#8a5a36';x.beginPath();x.ellipse(p.x,p.y,32,15,0,0,TAU);x.fill();x.fillStyle='#a06c42';x.beginPath();x.ellipse(p.x,p.y-2,29,12,0,0,TAU);x.fill();
+    x.strokeStyle='rgba(90,55,30,.55)';x.lineWidth=1.5;for(let k=-1;k<=1;k++){x.beginPath();x.moveTo(p.x-20,p.y-2+k*5);x.lineTo(p.x+20,p.y-2+k*5);x.stroke()}}
+  // fence with a gate in the front
+  const post=(px,py)=>{x.fillStyle='#7a4f2a';x.fillRect(px-2.5,py-16,5,18);x.fillStyle='#c48b55';x.fillRect(px-2,py-16,4,16);x.fillStyle='#e0b07a';x.fillRect(px-2,py-17,4,2)};
+  const rail=(x1,y1,x2,y2)=>{x.strokeStyle='#7a4f2a';x.lineWidth=3.5;for(const o of[-11,-5]){x.beginPath();x.moveTo(x1,y1+o);x.lineTo(x2,y2+o);x.stroke()}x.strokeStyle='#d39a62';x.lineWidth=2;for(const o of[-11.5,-5.5]){x.beginPath();x.moveTo(x1,y1+o);x.lineTo(x2,y2+o);x.stroke()}};
+  rail(l,t,r,t);rail(l,t,l,b);rail(r,t,r,b);rail(l,b,GD.x-40,b);rail(GD.x+40,b,r,b);
+  for(let px=l;px<=r+1;px+=GD.w/8){post(px,t)}for(let py=t+GD.h/5;py<b;py+=GD.h/5){post(l,py);post(r,py)}for(let px=l;px<=GD.x-39;px+=GD.w/8)post(px,b);for(let px=GD.x+40;px<=r+1;px+=GD.w/8)post(px,b);post(GD.x-40,b);post(GD.x+40,b);
+  // gate arch with a flower
+  x.strokeStyle='#7a4f2a';x.lineWidth=4;x.beginPath();x.arc(GD.x,b-16,40,Math.PI,0);x.stroke();x.strokeStyle='#c48b55';x.lineWidth=2.4;x.beginPath();x.arc(GD.x,b-16,40,Math.PI,0);x.stroke();
+  for(let k=0;k<7;k++){const a=Math.PI+k*Math.PI/6;x.fillStyle=['#ff9ac8','#ffe27a','#9fc2ff','#ff9a7a'][k%4];x.beginPath();x.arc(GD.x+Math.cos(a)*40,b-16+Math.sin(a)*40,3.2,0,TAU);x.fill()}}
+function drawPlant(x,p){const g=gplots()[p.i];if(!g)return;const st=plotStage(p.i),F=FLOWERS[g.k-1];
+  if(st===1){const k=Math.min(1,plotAge(p.i)/BUD_T);x.strokeStyle='#4f9a3a';x.lineWidth=2;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x,p.y-6-6*k);x.stroke();x.fillStyle='#6cc04a';
+    x.beginPath();x.ellipse(p.x-4,p.y-8-5*k,5,2.6,-.5,0,TAU);x.fill();x.beginPath();x.ellipse(p.x+4,p.y-8-5*k,5,2.6,.5,0,TAU);x.fill()}
+  else if(st===2){const sw=Math.sin(time*1.8+p.i)*1.5;for(const o of[-10,0,10]){x.strokeStyle='#4f9a3a';x.lineWidth=2;x.beginPath();x.moveTo(p.x+o*.6,p.y);x.lineTo(p.x+o+sw,p.y-20-Math.abs(o)*.3);x.stroke();
+      x.fillStyle=F.c;x.beginPath();x.ellipse(p.x+o+sw,p.y-22-Math.abs(o)*.3,3.2,4.4,0,0,TAU);x.fill()}x.fillStyle='#6cc04a';x.beginPath();x.ellipse(p.x-7,p.y-5,6,3,-.4,0,TAU);x.fill();x.beginPath();x.ellipse(p.x+7,p.y-5,6,3,.4,0,TAU);x.fill()}
+  else{const im=ART['flowers'+g.k];if(im){x.save();x.translate(p.x,p.y+6);x.rotate(Math.sin(time*1.3+p.i)*.025);artW(x,im,0,0,66);x.restore()}}}
+$('gardenBar').addEventListener('pointerdown',e=>e.stopPropagation());
 
 // ---------- photo booth ----------
 // Stage is 800x600; the saved photo adds a white instant-photo frame (880x748 JPEG, roughly 100 KB).
@@ -1490,7 +1577,7 @@ $('photoSave').onclick=async()=>{sTap();const url=$('photoImg').src;try{const bl
 // ---------- voice clips (ElevenLabs, one narrator voice) ----------
 const VOICE_ALL=['hi_sunny','hi_luna','hi_kiko','hi_hana','hi_ren','hi_bo','catch1','catch2','rare','spotted','found','door','skate',
   'lm_windmill','lm_wishtree','lm_icepalace','lm_frozenlake','lm_suntemple','lm_oasis','lm_wizard','lm_mushroom','lm_castle','lm_rainbow',
-  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox','an_slow','an_hungry','an_need','an_food','an_yum','an_pet','an_friend','an_buddy','hi_theo','hi_kai','hi_leo','name_bunny','name_penguin','name_fox','name_fennec','name_kitten','pb_hello','pb_cam','pb_face','pb_cheese','pb_wow','st1','st2','st3','st4'];
+  'tr_honey','tr_crown','tr_sungem','tr_wand','tr_teacup','tr_musicbox','gd_welcome','gd_plant','gd_water','gd_bloom','gd_visit','an_slow','an_hungry','an_need','an_food','an_yum','an_pet','an_friend','an_buddy','hi_theo','hi_kai','hi_leo','name_bunny','name_penguin','name_fox','name_fennec','name_kitten','pb_hello','pb_cam','pb_face','pb_cheese','pb_wow','st1','st2','st3','st4'];
 const voiceBuf={};let voiceSrc=null,voiceGain=null,chatterAt=-99,ipClip=null,voicePreloaded=false;
 function vBuf(n){if(voiceBuf[n])return voiceBuf[n];return voiceBuf[n]=fetch(`voice/${n}.mp3`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>ac.decodeAudioData(ab,res,rej))).catch(e=>{delete voiceBuf[n];throw e})}
 function preloadVoice(){if(voicePreloaded||!ac)return;voicePreloaded=true;let i=0;const next=()=>{if(i<VOICE_ALL.length)vBuf(VOICE_ALL[i++]).catch(()=>{}).finally(next)};next();next()}
@@ -1533,7 +1620,8 @@ $('skateExit').onclick=e=>{e.stopPropagation();sTap();endSkate()};
 function toWorld(e){return{x:viewL+(e.clientX*DPR)/PD/S,y:viewT+(e.clientY*DPR)/PD/S}}
 let ptrDown=false;
 canvas.addEventListener('pointerdown',e=>{if(!started||modalOpen())return;initAudio();ptrDown=true;try{canvas.setPointerCapture(e.pointerId)}catch(_){}
-  const w=toWorld(e);if(tapAnimal(w)){ptrDown=false;return}let best=null,bd=46;for(const b of wild){const d=Math.hypot(b.x-w.x,b.y-b.z-w.y);if(d<bd){bd=d;best=b}}
+  const w=toWorld(e);if(tapAnimal(w)){ptrDown=false;return}
+  if(!room){let gb=null,gd=36;for(const b of gFlies){const d=Math.hypot(b.x-w.x,b.y-b.z-w.y);if(d<gd){gd=d;gb=b}}if(gb&&Math.hypot(gb.x-P.x,gb.y-P.y)<320){ptrDown=false;openDetail(gb.seed);sayName(gb.seed,false);return}}let best=null,bd=46;for(const b of wild){const d=Math.hypot(b.x-w.x,b.y-b.z-w.y);if(d<bd){bd=d;best=b}}
   target=best?{b:best}:{x:w.x,y:w.y,hold:true};if(!movedOnce){movedOnce=true;$('hint').style.display='none'}});
 canvas.addEventListener('pointermove',e=>{if(!ptrDown||!target||target.b)return;const w=toWorld(e);target.x=w.x;target.y=w.y});
 const up=()=>{ptrDown=false;if(target)target.hold=false};
@@ -1559,7 +1647,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;dt60=dt*60;u
   if(popSeed!==null)drawPortrait(popCanvas,popSeed,time);if(detSeed!==null)drawPortrait(detCanvas,detSeed,time);
   requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown,discoverLandmark,AN,foods:()=>foods,vs:()=>({playing:!!voiceSrc,ipClip,n:Object.keys(voiceBuf).length})};
+window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown,discoverLandmark,AN,GD,PLOTS,gplots,gFlies:()=>gFlies,foods:()=>foods,vs:()=>({playing:!!voiceSrc,ipClip,n:Object.keys(voiceBuf).length})};
 })();
 </script>
 </body>
