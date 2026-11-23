@@ -359,7 +359,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
   </div>
 </div>
 
-<script>
+<script type="text/plain" id="gameSrc">
 (()=>{
 'use strict';
 // ---------- config ----------
@@ -515,6 +515,9 @@ const LANDS={
   oasis:{name:'Palm Oasis',em:'🌴',c:[CX,H-1500],ground:'g_sand',trees:[['palm',172]],border:['palm',175],hide:[['cactus',64]],deco:[['rock',30]],treeP:.3,hideP:.7,tint:'#ecd29a',mote:'sparkle'},
 };
 const LAND_KEYS=Object.keys(LANDS);
+// layout config (map.json): land centres and plant palettes
+for(const k of LAND_KEYS){const m=MAP.lands&&MAP.lands[k];if(!m)continue;for(const f of['c','trees','border','hide','deco','treeP','hideP'])if(m[f]!==undefined)LANDS[k][f]=m[f]}
+const START=MAP.start?{x:MAP.start.x,y:MAP.start.y}:{x:CX,y:CY};
 function warp(x,y){return[x+340*Math.sin(y/690+1.3)+190*Math.sin((x+y)/410),y+340*Math.sin(x/730+.4)+190*Math.sin((x-y)/380)]}
 function landDists(x,y){const[wx,wy]=warp(x,y);const o={};for(const k of LAND_KEYS){const c=LANDS[k].c;o[k]=Math.hypot(wx-c[0],wy-c[1])}return o}
 function landOf(x,y){const d=landDists(x,y);let best='meadow',bd=1e9;for(const k of LAND_KEYS)if(d[k]<bd){bd=d[k];best=k}return best}
@@ -532,6 +535,7 @@ const LANDMARKS=[
   {id:'castle',land:'castle',name:'The Princess Castle',img:'princess_castle',ar:.86,x:W-1300,y:CY-350,w:430,room:'room_castle',door:[.4,.88],treasure:'t_musicbox',tname:'Heart Music Box'},
   {id:'rainbow',land:'castle',name:'The Rainbow Bridge',img:'rainbow_bridge',ar:1.863,x:W-1900,y:CY+800,w:480,kind:'flat'},
 ];
+for(const lm of LANDMARKS){const m=MAP.landmarks&&MAP.landmarks.find(o=>o.id===lm.id);if(m){lm.x=m.x;lm.y=m.y;if(m.w)lm.w=m.w}}
 const OBST=[];// solid ellipses
 for(const lm of LANDMARKS){lm.h=lm.w/lm.ar;
   if(lm.room){lm.dx=lm.x+(lm.door[0]-.5)*lm.w;lm.dy=lm.y-lm.h+lm.h*lm.door[1];const ry=lm.h*.17;OBST.push({cx:lm.x,cy:lm.dy-ry-8,rx:lm.w*.41,ry,lm})}
@@ -539,7 +543,7 @@ for(const lm of LANDMARKS){lm.h=lm.w/lm.ar;
   else if(lm.kind==='tree')OBST.push({cx:lm.x,cy:lm.y-lm.h*.11,rx:lm.w*.13,ry:lm.h*.05,lm});
   lm.front={x:lm.room?lm.dx:lm.x,y:(lm.room?lm.dy:lm.y)+24}}
 // meadow ponds (painted pond art)
-const PONDS=[{cx:CX-950,cy:CY-350,w:330},{cx:CX+760,cy:CY+780,w:280}];
+const PONDS=MAP.ponds?MAP.ponds.map(p=>({cx:p.x,cy:p.y,w:p.w})):[{cx:CX-950,cy:CY-350,w:330},{cx:CX+760,cy:CY+780,w:280}];
 for(const p of PONDS){p.h=p.w/1.56;OBST.push({cx:p.cx,cy:p.cy,rx:p.w*.4,ry:p.h*.36,pond:p})}
 function blocked(x,y,m){for(const o of OBST){const dx=(x-o.cx)/(o.rx+m),dy=(y-o.cy)/(o.ry+m);if(dx*dx+dy*dy<1)return true}
   for(const lm of LANDMARKS){if(lm.kind==='flat'){if(Math.abs(x-lm.x)<lm.w*.55+m&&y<lm.y+m&&y>lm.y-lm.h-m)return true;continue}if(Math.abs(x-lm.x)<lm.w*.55+m&&y>lm.y-lm.h*.8-m&&y<lm.y+m)return true}
@@ -556,17 +560,19 @@ function catmullPath(P,closed){const n=P.length,segs=closed?n:n-1;
     if(i===0)PATHS.moveTo(p1.x,p1.y);PATHS.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,p2.x,p2.y);
     const len=Math.hypot(p2.x-p1.x,p2.y-p1.y),st=Math.max(.02,40/len);for(let t=0;t<1;t+=st){const u=1-t;addPS({x:u*u*u*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p2.x,y:u*u*u*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p2.y})}}
   if(closed)PATHS.closePath()}
-{const loop=[];for(let i=0;i<9;i++){const a=i/9*TAU+wr()*.3,rr=650+wr()*250;loop.push({x:CX+Math.cos(a)*rr,y:CY+Math.sin(a)*rr})}catmullPath(loop,true);
+const ROADS_USED=[];
+if(MAP.roads){for(const r of MAP.roads)if(r.pts&&r.pts.length>1){const pts=r.pts.map(([x,y])=>({x,y}));catmullPath(pts,!!r.closed);ROADS_USED.push(r)}}
+else{const loop=[];for(let i=0;i<9;i++){const a=i/9*TAU+wr()*.3,rr=650+wr()*250;loop.push({x:CX+Math.cos(a)*rr,y:CY+Math.sin(a)*rr})}catmullPath(loop,true);ROADS_USED.push({closed:true,pts:loop.map(p=>[Math.round(p.x),Math.round(p.y)])});
  for(const lm of LANDMARKS){const L=LANDS[lm.land],e=lm.front,pts=[{x:CX,y:CY+30}];
    if(lm.land!=='meadow'){const mx=CX+(L.c[0]-CX)*.45,my=CY+(L.c[1]-CY)*.45;pts.push({x:mx+(wr()-.5)*300,y:my+(wr()-.5)*300})}
-   const n=pts[pts.length-1];pts.push({x:(n.x+e.x)/2+(wr()-.5)*260,y:(n.y+e.y)/2+(wr()-.5)*260});pts.push(e);catmullPath(pts,false)}}
+   const n=pts[pts.length-1];pts.push({x:(n.x+e.x)/2+(wr()-.5)*260,y:(n.y+e.y)/2+(wr()-.5)*260});pts.push(e);catmullPath(pts,false);ROADS_USED.push({pts:pts.map(p=>[Math.round(p.x),Math.round(p.y)])})}}
 
 // trees, hiding spots, decor
 function nearTall(x,y,m){const cx=(x/CELL)|0,cy=(y/CELL)|0,m2=m*m;for(let i=cx-1;i<=cx+1;i++)for(let j=cy-1;j<=cy+1;j++){if(i<0||j<0||i>=GW||j>=GH)continue;for(const t of tall[i+j*GW]){const dx=x-t.x,dy=y-t.y;if(dx*dx+dy*dy<m2)return true}}return false}
 const pick=a=>a[(wr()*a.length)|0];
 // ---------- butterfly garden: a fenced plot near home, kept clear of paths, trees and flowers ----------
 const GD={w:380,h:270,x:CX,y:CY+420};
-(function(){const fits=(x,y)=>{for(const[dx,dy]of[[0,0],[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5],[0,-.5],[0,.5],[-.5,0],[.5,0]])if(nearPath(x+dx*GD.w,y+dy*GD.h,46)||blocked(x+dx*GD.w,y+dy*GD.h,60))return false;
+if(MAP.garden){GD.x=MAP.garden.x;GD.y=MAP.garden.y}else(function(){const fits=(x,y)=>{for(const[dx,dy]of[[0,0],[-.5,-.5],[.5,-.5],[-.5,.5],[.5,.5],[0,-.5],[0,.5],[-.5,0],[.5,0]])if(nearPath(x+dx*GD.w,y+dy*GD.h,46)||blocked(x+dx*GD.w,y+dy*GD.h,60))return false;
     return LANDMARKS.every(l=>Math.hypot(x-l.x,y-(l.y-(l.h||l.w)*.3))>l.w*.6+GD.w*.75)};
   for(let r=300;r<900;r+=40)for(let k=0;k<24;k++){const a=Math.PI/2+(k%2?1:-1)*Math.ceil(k/2)*TAU/24,x=CX+Math.cos(a)*r,y=CY+Math.sin(a)*r*.8;if(fits(x,y)){GD.x=x;GD.y=y;return}}})();
 const inGarden=(x,y,m=0)=>Math.abs(x-GD.x)<GD.w/2+m&&Math.abs(y-GD.y)<GD.h/2+m;
@@ -575,7 +581,7 @@ function addTree(x,y,spec){const t={kind:'tree',x,y,img:spec[0],w:spec[1]*(.9+wr
 for(let x=30;x<W;x+=60+wr()*55){for(const y of[45+wr()*70,H-25-wr()*55]){addTree(x,y,LANDS[landOf(x,y)].border)}if(wr()<.6){const y=170+wr()*60;addTree(x+25,y,LANDS[landOf(x+25,y)].border)}}
 for(let y=160;y<H-60;y+=60+wr()*55){for(const x of[35+wr()*70,W-35-wr()*70]){addTree(x,y,LANDS[landOf(x,y)].border)}if(wr()<.5){const x=150+wr()*50;addTree(x,y+20,LANDS[landOf(x,y)].border)}if(wr()<.5){const x=W-150-wr()*50;addTree(x,y+20,LANDS[landOf(x,y)].border)}}
 for(let i=0;i<11000;i++){const x=260+wr()*(W-520),y=300+wr()*(H-520),L=LANDS[landOf(x,y)];
-  if(wr()>L.treeP*.13)continue;if(Math.hypot(x-CX,y-CY)<380||inGarden(x,y,150)||nearPath(x,y,85)||blocked(x,y,70)||nearTall(x,y,115))continue;
+  if(wr()>L.treeP*.13)continue;if(Math.hypot(x-START.x,y-START.y)<380||inGarden(x,y,150)||nearPath(x,y,85)||blocked(x,y,70)||nearTall(x,y,115))continue;
   addTree(x,y,pick(L.trees))}
 const clusters=[];for(let i=0;i<160;i++)clusters.push({x:300+wr()*(W-600),y:300+wr()*(H-600)});
 for(let i=0;i<15000;i++){let x,y;if(wr()<.65){const c=clusters[(wr()*clusters.length)|0],a=wr()*TAU,d=Math.sqrt(wr())*260;x=c.x+Math.cos(a)*d;y=c.y+Math.sin(a)*d*.8}else{x=200+wr()*(W-400);y=220+wr()*(H-400)}
@@ -808,7 +814,7 @@ function update(dt){
   // camera
   const hw=lo.width/2/S,hh=lo.height/2/S,k=Math.min(1,dt*(started?6:1));
   if(room){cam.x=RW<2*hw?RW/2:clamp(lerp(cam.x,P.x,k),hw,RW-hw);cam.y=RH<2*hh?RH/2:clamp(lerp(cam.y,P.y,k),hh,RH-hh)}
-  else{const tx=started?P.x:CX+Math.cos(time*.07)*380,ty=started?P.y:CY+Math.sin(time*.09)*260;cam.x=clamp(lerp(cam.x,tx,k),hw,W-hw);cam.y=clamp(lerp(cam.y,ty,k),hh,H-hh)}
+  else{const tx=started?P.x:START.x+Math.cos(time*.07)*380,ty=started?P.y:START.y+Math.sin(time*.09)*260;cam.x=clamp(lerp(cam.x,tx,k),hw,W-hw);cam.y=clamp(lerp(cam.y,ty,k),hh,H-hh)}
   const ref=started?P:cam;
   // butterflies
   for(let i=wild.length-1;i>=0;i--){const b=wild[i];const dx=b.x-P.x,dy=b.y-P.y,d=Math.hypot(dx,dy),dc=Math.hypot(b.x-ref.x,b.y-ref.y);
@@ -1045,7 +1051,7 @@ function render(){
   for(const f of friends)drawFly(x,f.sp,f.x,f.y-f.z,f.rot,f.f,f.u);
   // ---- compose + modern layer ----
   compose(L,T);
-  glowRare(ctx,L,T,R,B);drawAnimalOverlay(ctx,L,T,R,B);drawGardenOverlay(ctx,L,T,R,B);
+  glowRare(ctx,L,T,R,B);drawAnimalOverlay(ctx,L,T,R,B);drawGardenOverlay(ctx,L,T,R,B);drawMarkers(ctx,L,T,R,B);
   for(const b of wild){if(b.state!=='hide'||b.x<L-30||b.x>R+30||b.y<T-30||b.y>B+30)continue;const near=Math.hypot(b.x-P.x,b.y-P.y)<260,per=near?1.3:2.4,ph=((time+b.ph0*3)%per)/per;
     if(ph<.35)twinkle(ctx,b.x,b.y-6,(near?9:7)*Math.sin(ph/.35*Math.PI))}
   // doorways glow softly so she knows she can go inside
@@ -1183,7 +1189,7 @@ function drawCharCards(){charCards.forEach((o,i)=>{if(o.cv)renderChar(o.cv,o.c,C
 function renderHudChar(){$('charBtn').querySelector('.face').style.backgroundImage=`url(chars/${curChar().id}.webp)`;charImg(curChar().id)}
 $('charBtn').onclick=()=>{sTap();buildChars();$('start').classList.add('show')};
 $('playBtn').onclick=()=>{initAudio();preloadVoice();sTap();$('start').classList.remove('show');renderHudChar();if(started)return;started=true;P.x=W/2;P.y=H/2;cam.x=P.x;cam.y=P.y;wild.length=0;
-  P.x=CX;P.y=CY;cam.x=P.x;cam.y=P.y;spawnWild(230,320);for(let i=0;i<2;i++)spawnHidden(260,480);
+  P.x=START.x;P.y=START.y;cam.x=P.x;cam.y=P.y;spawnWild(230,320);for(let i=0;i<2;i++)spawnHidden(260,480);
   if(!save.played){$('hint').style.display='block';save.played=true;persist()}};
 
 // ---------- achievements ----------
@@ -1312,8 +1318,8 @@ const isFriend=id=>hearts(id)>=3;
 const foodN=f=>(save.food||(save.food={}))[f]|0;
 // homes keep clear of landmarks and ponds so the animals are easy to see
 function clearSpot(x,y){return LANDMARKS.every(l=>Math.hypot(x-l.x,y-(l.y-(l.h||l.w)*.3))>l.w*.75+140)&&OBST.every(o=>((x-o.cx)/(o.rx+90))**2+((y-o.cy)/(o.ry+90))**2>1)}
-const AN=ANIMALS.map(a=>{const c=LANDS[a.land].c;let r=Math.hypot(a.off[0],a.off[1]),an=Math.atan2(a.off[1],a.off[0]),hx=0,hy=0;
-  for(let k=0;k<48;k++){hx=clamp(c[0]+Math.cos(an)*r,260,W-260);hy=clamp(c[1]+Math.sin(an)*r,320,H-260);if(clearSpot(hx,hy)&&landOf(hx,hy)===a.land)break;an+=.55;if(k%12===11)r+=140}
+const AN=ANIMALS.map(a=>{const c=LANDS[a.land].c,cfg=MAP.animals&&MAP.animals[a.id];let r=Math.hypot(a.off[0],a.off[1]),an=Math.atan2(a.off[1],a.off[0]),hx=cfg?cfg.x:0,hy=cfg?cfg.y:0;
+  if(!cfg)for(let k=0;k<48;k++){hx=clamp(c[0]+Math.cos(an)*r,260,W-260);hy=clamp(c[1]+Math.sin(an)*r,320,H-260);if(clearSpot(hx,hy)&&landOf(hx,hy)===a.land)break;an+=.55;if(k%12===11)r+=140}
   return{...a,animal:true,x:hx,y:hy,hx,hy,tx:hx,ty:hy,t:0,state:'wander',trust:0,face:1,hop:0,moving:false,bub:null,bubT:0,happy:0,needSaid:false}});
 let foods=[],snackFor=null,petHintAt=-99;
 function anBubble(a,b,t=1.6){a.bub=b;a.bubT=t}
@@ -1430,6 +1436,16 @@ function water(i){const g=gplots()[i];if(!g)return;const now=performance.now();i
   if(ac){const t=ac.currentTime;for(let k=0;k<4;k++)note(1200+Math.random()*600,t+k*.05,.06,'sine',.04)}chatter('gd_water',.35,20);gBarStage=-2}
 function pickPlot(i){gSel=-1;gplots()[i]=0;persist();sparkle(PLOTS[i].x,PLOTS[i].y-20,'#ffd1e0');sTap();gBarStage=-2}
 function gardenCount(){return bloomList().length}
+const MARKERS=Array.isArray(MAP.markers)?MAP.markers:[];
+const MARK_EM={secret:'✨',poi:'⭐',signpost:'🪧',gateway:'⛩️',note:'📝'};
+function drawMarkers(c,L,T,R,B){if(!MAP_DRAFT)return;c.textAlign='center';c.textBaseline='middle';
+  for(const m of MARKERS){if(m.x<L-80||m.x>R+80||m.y<T-80||m.y>B+80)continue;c.fillStyle='rgba(255,255,255,.88)';c.beginPath();c.arc(m.x,m.y-16,13,0,TAU);c.fill();c.font='16px sans-serif';c.fillText(MARK_EM[m.type]||'📍',m.x,m.y-15);
+    if(m.label){c.font='600 11px Andika, sans-serif';const w=c.measureText(m.label).width+10;c.fillStyle='rgba(59,51,80,.8)';c.fillRect(m.x-w/2,m.y+2,w,16);c.fillStyle='#fff';c.fillText(m.label,m.x,m.y+10)}}}
+// what the current world looks like as a map.json (used once to seed the file)
+window.__exportMap=()=>({version:1,start:{x:Math.round(START.x),y:Math.round(START.y)},
+  lands:Object.fromEntries(LAND_KEYS.map(k=>{const L=LANDS[k];return[k,{c:L.c.map(Math.round),trees:L.trees,border:L.border,hide:L.hide,deco:L.deco,treeP:L.treeP,hideP:L.hideP}]})),
+  landmarks:LANDMARKS.map(l=>({id:l.id,x:Math.round(l.x),y:Math.round(l.y),w:l.w})),ponds:PONDS.map(p=>({x:Math.round(p.cx),y:Math.round(p.cy),w:p.w})),
+  roads:ROADS_USED,garden:{x:Math.round(GD.x),y:Math.round(GD.y)},animals:Object.fromEntries(AN.map(a=>[a.id,{x:Math.round(a.hx),y:Math.round(a.hy)}])),markers:MARKERS});
 function drawGardenOverlay(c,L,T,R,B){if(!started||room||GD.x+GD.w/2<L||GD.x-GD.w/2>R||GD.y+GD.h/2<T||GD.y-GD.h/2>B)return;if(Math.hypot(P.x-GD.x,P.y-GD.y)>650)return;
   c.textAlign='center';c.textBaseline='middle';
   for(const p of PLOTS){const st=plotStage(p.i),sel=p.i===gPlot;
@@ -1665,6 +1681,14 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;dt60=dt*60;u
 requestAnimationFrame(frame);
 window.__bf={sprite,drawFly,startSkate,endSkate,getSkate:()=>skate,LANDMARKS,enterRoom,exitRoom,getRoom:()=>room,G,save,wild,P,openPopup,catchB,openBook,openDetail,openGrown,discoverLandmark,AN,GD,PLOTS,gplots,gFlies:()=>gFlies,tapPlot,gSel:()=>gSel,toWorld,w2c:(x,y)=>[(x-viewL)*S*PD/DPR,(y-viewT)*S*PD/DPR],skating:()=>!!skate,LAKE,foods:()=>foods,vs:()=>({playing:!!voiceSrc,ipClip,n:Object.keys(voiceBuf).length})};
 })();
+</script>
+<script>
+// The world layout lives in map.json (edited with editor.html). ?map=draft plays the editor's unsaved draft instead.
+(function(){const q=new URLSearchParams(location.search),wantDraft=q.get('map')==='draft';
+  const run=(m,draft)=>{window.MAP=m||{};window.MAP_DRAFT=!!draft;const s=document.createElement('script');s.textContent=document.getElementById('gameSrc').textContent;document.body.appendChild(s)};
+  if(wantDraft){try{const d=JSON.parse(localStorage.getItem('bf-map-draft'));if(d)return run(d,true)}catch(e){}}
+  fetch('map.json',{cache:'no-cache'}).then(r=>r.ok?r.json():Promise.reject()).then(m=>{try{localStorage.setItem('bf-map-cache',JSON.stringify(m))}catch(e){}run(m)})
+    .catch(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('bf-map-cache'))}catch(e){}run(m)})})();
 </script>
 </body>
 </html>
