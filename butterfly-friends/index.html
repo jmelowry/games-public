@@ -8,13 +8,12 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Butterflies">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>
-// Some iPhones (home-screen app + translucent status bar) report a viewport shorter than the screen,
-// leaving a strip at the bottom. Measure the real height and let the layout use it.
+// Layout height in one place (CSS var --app-h), so the canvas and overlays always agree.
 window.__appH=function(){var h=Math.max(innerHeight,document.documentElement.clientHeight||0);
   var st=navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
-  if(st&&window.screen&&screen.height){var portrait=innerHeight>=innerWidth,sh=portrait?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(sh>h&&sh-h<160)h=sh}return h};
+  return h};
 window.__setAppH=function(){var h=__appH(),r=document.documentElement.style;r.setProperty('--app-h',h+'px');r.setProperty('--bfix',Math.max(0,h-innerHeight)+'px')};
 __setAppH();addEventListener('resize',__setAppH);addEventListener('orientationchange',function(){setTimeout(__setAppH,300)});
 </script>
@@ -92,7 +91,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .row{display:flex;gap:10px}
 .row .tbtn{flex:1}
 .small{font-size:13px;opacity:.7}
-#start{justify-content:center}
+#start{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#start>:first-child{margin-top:auto}#start>:last-child{margin-bottom:auto}
 /* the title screen has its own controls: keep the in-game buttons from overlapping it */
 body:has(#start.show) .hud,body:has(#start.show) #boothBtn,body:has(#start.show) #mapBtn{visibility:hidden}
 #wardrobe{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:min(560px,94vw)}
@@ -102,7 +102,7 @@ body:has(#start.show) .hud,body:has(#start.show) #boothBtn,body:has(#start.show)
 .wtile.on{outline:4px solid #ff6f9a;background:#ffe3ee}
 .wtile.no{background:rgba(239,233,220,.85)}
 #chars{display:grid;grid-template-columns:repeat(5,auto);gap:12px;justify-content:center}
-@media (max-width:600px){#chars{grid-template-columns:repeat(3,auto);gap:8px}.ccard img{width:62px;height:94px}#start{gap:12px}}
+@media (max-width:600px){#chars{grid-template-columns:repeat(3,auto);gap:8px}.ccard img{width:62px;height:94px}#start{gap:10px}#start h1{font-size:clamp(34px,11vw,52px)}#start .play{width:96px;height:96px}#start .play svg{width:48px;height:48px}.wtile{width:50px;height:50px;border-radius:14px;padding:5px;font-size:22px}#wardrobe{gap:6px;flex-wrap:nowrap}}
 .ccard{border:0;background:rgba(255,255,255,.92);border-radius:24px;padding:8px 8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 5px 0 rgba(59,51,80,.2);font:inherit;font-weight:700;font-size:16px;color:var(--ink);touch-action:manipulation;cursor:pointer;outline:4px solid transparent;transition:transform .15s,outline-color .15s}
 .ccard canvas{width:68px;height:112px;display:block}
 .ccard img{width:84px;height:128px;object-fit:contain;display:block;filter:drop-shadow(0 4px 3px rgba(59,51,80,.18));-webkit-user-drag:none}
@@ -238,7 +238,7 @@ body:has(#start.show) .hud,body:has(#start.show) #boothBtn,body:has(#start.show)
 <div id="toast"></div>
 
 <div class="overlay show" id="start">
-  <h1><span>Butterfly</span><span>Friends</span></h1>
+  <h1 id="titleH"><span>Butterfly</span><span>Friends</span></h1>
   <div id="chars"></div>
   <div id="wardrobe"></div>
   <button class="btn play" id="playBtn" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M6 3.5v17l14-8.5z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></button>
@@ -1173,7 +1173,7 @@ function openGrown(){const n=save.seeds.length;$('gCount').textContent=n?`${n} b
 $('grownClose').onclick=()=>$('grown').classList.remove('show');
 $('copyBtn').onclick=async()=>{const url=shareLink();try{await navigator.clipboard.writeText(url);toast('Link copied')}catch(e){const t=$('restoreBox');t.value=url;t.focus();t.select();toast('Select & copy the link below')}};
 $('restoreBtn').onclick=()=>{const list=parseCode($('restoreBox').value);if(!list||!list.length){toast('No save code found');return}const a=mergeSeeds(list);$('restoreBox').value='';toast(a?`+${a} butterflies restored`:'Already have all of these');openGrown()};
-let toastT=0;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+let toastT=0;function toast(m,ms=2600){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),ms)}
 // start
 function renderStart(){const n=save.seeds.length;$('startHave').innerHTML=n?FLY_SVG+'<span>'+n+'</span>':''}
 // ---------- character select ----------
@@ -1198,6 +1198,9 @@ function refreshCardImgs(){charCards.forEach(o=>{const im=o.b.querySelector('img
   const oc=mk(x1-x0+2,c.height-y0);oc.getContext('2d').drawImage(c,-x0,-y0);im.src=oc.toDataURL('image/webp',.85)})}
 function drawCharCards(){charCards.forEach((o,i)=>{if(o.cv)renderChar(o.cv,o.c,CROP_FULL,.9,o.c.id===save.char,i*1.3)})}
 function renderHudChar(){$('charBtn').querySelector('.face').style.backgroundImage=`url(chars/${curChar().id}.webp)`;charImg(curChar().id)}
+{let taps=[];$('titleH').addEventListener('click',()=>{const n=performance.now();taps=taps.filter(t=>n-t<700);taps.push(n);if(taps.length<3)return;taps=[];
+  const cs=getComputedStyle(document.documentElement),sa=k=>{const d=document.createElement('div');d.style.cssText=`position:fixed;top:env(safe-area-inset-${k});`;document.body.append(d);const v=getComputedStyle(d).top;d.remove();return v};
+  toast(`inner ${innerWidth}×${innerHeight} · screen ${screen.width}×${screen.height} · vv ${visualViewport?Math.round(visualViewport.height)+'@'+Math.round(visualViewport.offsetTop):'-'} · safe t${sa('top')} b${sa('bottom')} · ${navigator.standalone?'app':'web'}`,9000)})}
 $('charBtn').onclick=()=>{sTap();buildChars();$('start').classList.add('show')};
 $('playBtn').onclick=()=>{initAudio();preloadVoice();sTap();$('start').classList.remove('show');renderHudChar();if(started)return;started=true;P.x=W/2;P.y=H/2;cam.x=P.x;cam.y=P.y;wild.length=0;
   P.x=START.x;P.y=START.y;cam.x=P.x;cam.y=P.y;spawnWild(230,320);for(let i=0;i<2;i++)spawnHidden(260,480);
