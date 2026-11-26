@@ -9,16 +9,25 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Butterflies">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+// Some iPhones (home-screen app + translucent status bar) report a viewport shorter than the screen,
+// leaving a strip at the bottom. Measure the real height and let the layout use it.
+window.__appH=function(){var h=Math.max(innerHeight,document.documentElement.clientHeight||0);
+  var st=navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+  if(st&&window.screen&&screen.height){var portrait=innerHeight>=innerWidth,sh=portrait?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);if(sh>h&&sh-h<160)h=sh}return h};
+window.__setAppH=function(){var h=__appH(),r=document.documentElement.style;r.setProperty('--app-h',h+'px');r.setProperty('--bfix',Math.max(0,h-innerHeight)+'px')};
+__setAppH();addEventListener('resize',__setAppH);addEventListener('orientationchange',function(){setTimeout(__setAppH,300)});
+</script>
 <title>Butterfly Friends</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
 <style>
-:root{--ink:#3b3350;--cream:#fffaf0;--pink:#ff8fb1;--gold:#ffc83d;--safe-t:env(safe-area-inset-top);--safe-l:env(safe-area-inset-left);--safe-r:env(safe-area-inset-right);--safe-b:env(safe-area-inset-bottom)}
+:root{--app-h:100%;--bfix:0px;--safe-bb:calc(var(--safe-b) - var(--bfix));--ink:#3b3350;--cream:#fffaf0;--pink:#ff8fb1;--gold:#ffc83d;--safe-t:env(safe-area-inset-top);--safe-l:env(safe-area-inset-left);--safe-r:env(safe-area-inset-right);--safe-b:env(safe-area-inset-bottom)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:Andika,Fredoka,ui-rounded,system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
-#game{position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:block;image-rendering:pixelated}
+#game{position:fixed;top:0;left:0;width:100%;height:var(--app-h);touch-action:none;display:block;image-rendering:pixelated}
 .hud{position:fixed;top:calc(var(--safe-t) + 12px);display:flex;gap:10px;z-index:5}
 .hud.left{left:calc(var(--safe-l) + 12px)}
 .hud.right{right:calc(var(--safe-r) + 12px)}
@@ -31,11 +40,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 #gearBtn svg.g{width:30px;height:30px;opacity:.55}
 .bump{animation:bump .5s}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
-#hint{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18%);font-size:64px;transform:translateX(-50%);z-index:4;pointer-events:none;animation:tap 1.4s ease-in-out infinite;display:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
+#hint{position:fixed;left:50%;bottom:calc(var(--safe-bb) + 18%);font-size:64px;transform:translateX(-50%);z-index:4;pointer-events:none;animation:tap 1.4s ease-in-out infinite;display:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
 @keyframes tap{0%,100%{transform:translate(-50%,0) scale(1)}50%{transform:translate(-50%,14px) scale(.9)}}
 #toast{position:fixed;left:50%;top:calc(var(--safe-t) + 84px);transform:translate(-50%,-20px);background:#fff;border-radius:999px;padding:10px 20px;font-weight:700;font-size:20px;box-shadow:0 8px 24px rgba(0,0,0,.15);opacity:0;transition:.3s;z-index:30;pointer-events:none}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10;padding:calc(var(--safe-t) + 16px) calc(var(--safe-r) + 16px) calc(var(--safe-b) + 16px) calc(var(--safe-l) + 16px)}
+.overlay{position:fixed;top:0;left:0;right:0;height:var(--app-h);display:none;align-items:center;justify-content:center;z-index:10;padding:calc(var(--safe-t) + 16px) calc(var(--safe-r) + 16px) calc(var(--safe-b) + 16px) calc(var(--safe-l) + 16px)}
 .overlay.show{display:flex}
 .dim{background:rgba(44,34,70,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .card{background:var(--cream);border-radius:32px;padding:22px;box-shadow:0 8px 0 rgba(59,51,80,.18),0 24px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;gap:8px;max-width:100%;max-height:100%;position:relative;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
@@ -84,6 +93,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .row .tbtn{flex:1}
 .small{font-size:13px;opacity:.7}
 #start{justify-content:center}
+/* the title screen has its own controls: keep the in-game buttons from overlapping it */
+body:has(#start.show) .hud,body:has(#start.show) #boothBtn,body:has(#start.show) #mapBtn{visibility:hidden}
 #wardrobe{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:min(560px,94vw)}
 #wardrobe:empty{display:none}
 .wtile{width:62px;height:62px;border:0;border-radius:18px;background:rgba(255,255,255,.92);box-shadow:0 4px 0 rgba(59,51,80,.2);display:flex;align-items:center;justify-content:center;padding:6px;font:inherit;font-size:26px;font-weight:700;color:#c9c1b0}
@@ -127,7 +138,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 #badgePop .card{background:radial-gradient(circle at 50% 30%,#fffbe6,#fff2c7)}
 .burstRays{position:absolute;inset:-40px;background:repeating-conic-gradient(rgba(255,214,90,.35) 0 10deg,transparent 10deg 20deg);border-radius:50%;animation:spin 10s linear infinite;z-index:-1;-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%)}
 @keyframes spin{to{transform:rotate(1turn)}}
-#mapBtn{position:fixed;right:calc(var(--safe-r) + 14px);bottom:calc(var(--safe-b) + 16px);z-index:5;width:72px;height:72px;border-radius:50%;padding:0}
+#mapBtn{position:fixed;right:calc(var(--safe-r) + 14px);bottom:calc(var(--safe-bb) + 16px);z-index:5;width:72px;height:72px;border-radius:50%;padding:0}
 #mapBtn .em{font-size:38px;line-height:1}
 #fade{position:fixed;inset:0;background:#fffaf0;opacity:0;pointer-events:none;transition:opacity .28s;z-index:20}
 #fade.show{opacity:1}
@@ -150,7 +161,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .bstrip .medal.mini canvas{width:46px;height:46px}.bstrip .medal.mini .num{font-size:22px}.bstrip .medal.mini .em{font-size:26px}.bstrip .medal.mini .st{font-size:11px}.bstrip .medal.mini .sub{font-size:9px;bottom:5px}
 .bstrip .blab{font-weight:700;font-size:15px;line-height:1.15;text-align:left}
 .badge{cursor:pointer}
-#skateHud{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);display:none;align-items:center;gap:12px;z-index:6}
+#skateHud{position:fixed;left:50%;bottom:calc(var(--safe-bb) + 18px);transform:translateX(-50%);display:none;align-items:center;gap:12px;z-index:6}
 #skateHud.show{display:flex}
 .skpill{background:rgba(255,255,255,.95);border-radius:999px;padding:10px 18px;font-family:Andika,Fredoka,sans-serif;font-weight:700;font-size:26px;box-shadow:0 4px 0 rgba(59,51,80,.18)}
 #skateExit{width:88px;height:88px;margin:0;border-radius:50%;font-size:46px;padding:0;background:#fff;box-shadow:0 5px 0 rgba(59,51,80,.25)}
@@ -162,12 +173,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 @media (max-width:440px){.hud{gap:7px}.hud .btn{height:50px;min-width:50px;padding:0 9px;font-size:22px;border-radius:16px}.hud .btn svg{width:30px;height:30px}#trophyBtn .em{font-size:24px}#charBtn .face{width:36px;height:36px}#gearBtn svg.g{width:26px;height:26px}#bgrid{grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 10px 24px}.badge .medal{width:76px;height:76px}.badge .medal canvas{width:68px;height:68px}.badge .medal .num{font-size:28px}.badge .lab{font-size:11px}}
 @media (max-height:700px){#start h1{font-size:40px}.ccard canvas{width:54px;height:88px}.ccard img{width:66px;height:100px}}
 
-#gardenBar{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);z-index:6;display:none;gap:10px}
+#gardenBar{position:fixed;left:50%;bottom:calc(var(--safe-bb) + 18px);transform:translateX(-50%);z-index:6;display:none;gap:10px}
 #gardenBar.show{display:flex}
 #gardenBar button{width:84px;height:84px;border-radius:50%;padding:6px;background:#fff7e8;display:flex;align-items:center;justify-content:center;font-size:40px}
 #gardenBar button img{width:100%;height:100%;object-fit:contain}
 @media (max-width:440px){#gardenBar button{width:68px;height:68px;font-size:32px}#gardenBar{gap:6px}}
-#snackBtn{position:fixed;left:50%;bottom:calc(var(--safe-b) + 18px);transform:translateX(-50%);z-index:6;width:96px;height:96px;border-radius:50%;padding:0;display:none;background:#fff7d6;animation:snackPulse 1.2s ease-in-out infinite}
+#snackBtn{position:fixed;left:50%;bottom:calc(var(--safe-bb) + 18px);transform:translateX(-50%);z-index:6;width:96px;height:96px;border-radius:50%;padding:0;display:none;background:#fff7d6;animation:snackPulse 1.2s ease-in-out infinite}
 #snackBtn.show{display:flex}
 #snackBtn img{width:64px;height:64px;object-fit:contain}
 #snackBtn.none img{filter:grayscale(1);opacity:.45}
@@ -177,7 +188,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#86c96f;font-family:An
 .acell.no img{filter:brightness(0);opacity:.18}
 .acell .hearts{font-size:15px;letter-spacing:1px}
 .acell.buddy{outline:4px solid #ff6f9a;background:#ffe3ee}
-#boothBtn{position:fixed;left:calc(var(--safe-l) + 14px);bottom:calc(var(--safe-b) + 16px);z-index:5;width:72px;height:72px;border-radius:50%;padding:0}
+#boothBtn{position:fixed;left:calc(var(--safe-l) + 14px);bottom:calc(var(--safe-bb) + 16px);z-index:5;width:72px;height:72px;border-radius:50%;padding:0}
 #boothBtn .em{font-size:36px;line-height:1}
 #booth .sheet{background:var(--cream);border-radius:32px;width:min(860px,100%);height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
 #booth header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 4px 20px;gap:10px}
@@ -684,7 +695,7 @@ let target=null,keys={},time=0,lastSeen=0,badgeShowing=false,started=false,popSe
 const wild=[],friends=[],parts=[],motes=[];
 
 function resize(){
-  const vw=innerWidth,vh=innerHeight;vwD=Math.round(vw*DPR);vhD=Math.round(vh*DPR);canvas.width=vwD;canvas.height=vhD;
+  __setAppH();const vw=innerWidth,vh=__appH();vwD=Math.round(vw*DPR);vhD=Math.round(vh*DPR);canvas.width=vwD;canvas.height=vhD;
   PD=Math.max(1,Math.round(Math.min(vwD,vhD)/LO_SHORT));lo.width=Math.ceil(vwD/PD);lo.height=Math.ceil(vhD/PD);
   S=Math.min(lo.width,lo.height)/VIEW;buildVignette();
 }
